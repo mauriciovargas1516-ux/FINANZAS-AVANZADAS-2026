@@ -2,3 +2,6 @@ streamlit
 pandas
 numpy
 openpyxl
+requests
+pypdf
+google-auth
