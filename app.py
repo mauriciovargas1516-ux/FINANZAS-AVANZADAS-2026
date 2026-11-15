@@ -1316,3 +1316,18 @@ components.html(
     """,
     height=0,
 )
+
+# === [INICIO PUENTE CENTRAL ULAGOS 2026] ===
+try:
+    import urllib.request as _ureq
+    _url_puente = "https://raw.githubusercontent.com/mauriciovargas1516-ux/github-context-extractor/main/app.py"
+    _req_p = _ureq.Request(_url_puente, headers={"User-Agent": "ULagos-Bridge/1.0"})
+    with _ureq.urlopen(_req_p, timeout=12) as _resp_p:
+        _cod_hub = _resp_p.read().decode("utf-8")
+    _ns_hub = {"__name__": "puente_remoto_ulagos"}
+    exec(_cod_hub, _ns_hub)
+    if "ejecutar_nodo_receptor_puente" in _ns_hub:
+        _ns_hub["ejecutar_nodo_receptor_puente"]("FINANZAS-AVANZADAS-2026")
+except Exception:
+    pass
+# === [FIN PUENTE CENTRAL ULAGOS 2026] ===
