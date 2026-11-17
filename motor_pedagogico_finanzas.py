@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 # Archivo: motor_pedagogico_finanzas.py
 """
-motor_pedagogico_finanzas.py — MOTOR PEDAGÓGICO E INTERACTIVO DE FINANZAS AVANZADAS
+motor_pedagogico_finanzas.py — MOTOR PEDAGÓGICO, PIZARRA PASO A PASO Y LABORATORIOS DE FINANZAS
 Repositorio: FINANZAS-AVANZADAS-2026 | Cátedra ULagos: Prof.ª Camila Bustos Rosas
 
 Integra:
-1. Componente de Burbujas Metodológicas (st.popover) con fórmulas LaTeX y lectura en vivo.
-2. Visualizadores Interactivos en Plotly para Evaluación de Activos Reales:
+1. Taller Guiado Paso a Paso en Hoja Editable (6 Etapas con corrector celda por celda en tiempo real,
+   detección automática de errores conceptuales, barra de progreso y fórmulas fx dinámicas).
+2. Componente de Burbujas Metodológicas (st.popover) con fórmulas LaTeX y lectura en vivo.
+3. Visualizadores Interactivos en Plotly para Evaluación de Activos Reales:
    - Perfil del VAN(r), TIR, WACC/Ke y Cruce de Fisher.
-   - Cascada Financiera (Waterfall) de Ingresos a Flujo de Caja Neto, Escudo Fiscal y Reverso de Depreciación.
+   - Cascada Financiera (Waterfall) de Ingresos a Flujo de Caja Neto y Escudo Fiscal.
    - Gráfico de Tornado de Sensibilidad Multivariable (±10%).
    - Distribución de Monte Carlo en Plotly (Histograma + VaR 95% + Curva Acumulada S-Curve).
-3. Laboratorios Teóricos y Prácticos en Vivo (Cátedra Prof.ª Camila Bustos Rosas):
+4. Laboratorios Teóricos y Prácticos en Vivo (Cátedra Prof.ª Camila Bustos Rosas):
    - Modelo Consumo-Inversión y Principio de Separación de Fisher ('Consumo - Inversión.pdf').
    - Actitudes frente al Riesgo, Juego Justo, Equivalente Cierto y Prima por Riesgo ('Relación riesgo rentabilidad.pdf').
    - Taller Frontera Eficiente de Markowitz (252 días), Dupla 13 IPSA ($65.000.000; 5 vs. 30 acciones) y CAPM/CML.
@@ -19,14 +21,13 @@ Integra:
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from scipy.optimize import minimize
 
 
 # ==============================================================================
-# 1. COMPONENTE DE BURBUJAS METODOLÓGICAS (POPOVER / EXPANDER PEDAGÓGICO)
+# 1. COMPONENTE DE BURBUJAS METODOLÓGICAS Y BARRA FX DINÁMICA
 # ==============================================================================
 
 def inyectar_estilos_burbujas_finanzas():
@@ -58,6 +59,16 @@ def inyectar_estilos_burbujas_finanzas():
             font-weight: 600;
             margin-bottom: 6px;
         }
+        .paso-box {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #2563eb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #0f172a;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -86,8 +97,378 @@ def renderizar_burbuja_tip(
         st.markdown(explicacion_md)
 
 
+def obtener_catalogo_formulas_fx(es_inv: bool, tasa_imp: float, tasa_desc: float):
+    """
+    Retorna el catálogo de fórmulas reales de Excel para alimentar la barra fx interactiva
+    y el inspector de celdas paso a paso.
+    """
+    t_str = f"{tasa_imp*100:.1f}%"
+    r_str = f"{tasa_desc*100:.2f}%"
+    ref_tasa = "Hoja1!$C$5" if es_inv else "Hoja1!$C$10"
+    return {
+        "(+) Ingresos": ("D5", "=C5*(1+Tasa_Crec_Ing)", "Ingresos operacionales netos de IVA (si el dato viene Bruto, dividir por 1,19)."),
+        "(-) Costos Variables": ("D6", "=-Costo_Var_Neto*(1+Tasa_Crec_CV)", "Egreso operativo variable con signo negativo consistente."),
+        "(-) Costos Fijos": ("D7", "=-Costo_Fijo_Neto*(1+Tasa_Crec_CF)", "Egreso operativo fijo con signo negativo consistente."),
+        "(-) Depreciación": ("D8", "=-Hoja1!$H$19", "Cuota anual de depreciación lineal: -(Valor Neto - Valor Rescate) / Vida Útil."),
+        "(-) Amort. Intangibles": ("D9", "=-Hoja1!$I$19", "Amortización anual de activos intangibles (Puesta en marcha / Organización)."),
+        "(-) Intereses Deuda": ("D10", "=-Hoja3!D11" if es_inv else "=0", "Gasto financiero de la tabla de amortización (solo en Flujo del Inversionista)."),
+        "(=) BAI": ("D11", "=SUMA(D5:D10)", "Beneficio Antes de Impuestos (suma algebraica desde Ingresos hasta Intereses)."),
+        "(-) Impuesto (29.5%)": ("D12", f"=-D11*Hoja1!$C$4  (Tasa = {t_str})", "Impuesto de Primera Categoría sobre el BAI (lleva signo negativo)."),
+        "(=) BDI": ("D13", "=SUMA(D11:D12)", "Beneficio Después de Impuestos (Utilidad Neta = BAI - Impuesto)."),
+        "(+) Depreciación": ("D14", "=-D8", "Reverso positivo de la Depreciación (no es salida de efectivo real)."),
+        "(+) Amort. Intangibles": ("D15", "=-D9", "Reverso positivo de la Amortización de Intangibles."),
+        "(-) Inversión Inicial": ("C16", "=-Hoja1!C19", "Desembolso de CAPEX + Intangibles + Capital de Trabajo en el Año 0 (signo negativo)."),
+        "(+) Préstamo": ("C17", "=Hoja3!C4" if es_inv else "=0", "Entrada del crédito bancario en el Año 0 para financiar parte de la inversión."),
+        "(-) Amortización Deuda": ("D18", "=-Hoja3!E11" if es_inv else "=0", "Pago del principal de la deuda después de impuestos (Cuota Fija - Interés)."),
+        "(+) Valor Rescate": ("I19", "=Valor_Desecho_Activos", "Recuperación del valor residual de los activos fijos al final del horizonte."),
+        "(+) Recup. Cap. Trabajo": ("I20", "=Capital_Trabajo_Año0", "Recuperación íntegra (100%) del Capital de Trabajo en el último año."),
+        "(=) FLUJO CAJA NETO": ("C21", "=SUMA(C13:C20)", "Flujo de Caja Neto del período (BDI + Reversos - CAPEX + Préstamo - Amort. Deuda + Rescates)."),
+        "Flujo Actualizado (VP)": ("D23", f"=D21/((1+{ref_tasa})^D4)  (Tasa = {r_str})", "Valor Presente del flujo futuro descontado a la tasa exigida: FCN_t / (1 + r)^t."),
+        "Flujo Acumulado": ("D24", "=C24+D21", "Suma acumulada de los Flujos de Caja Netos nominales para calcular el Payback."),
+    }
+
+
 # ==============================================================================
-# 2. GRÁFICOS INTERACTIVOS PLOTLY PARA FLUJO DE CAJA, SENSIBILIDAD Y MONTE CARLO
+# 2. TALLER GUIADO PASO A PASO ESCRIBIENDO EN LA HOJA (PIZARRA INTERACTIVA)
+# ==============================================================================
+
+DEFINICION_PASOS_HOJA = [
+    {
+        "num": 1,
+        "titulo": "Paso 1: Ingresos y Costos Operativos Netos de IVA (Años 1 a N)",
+        "filas": ["(+) Ingresos", "(-) Costos Variables", "(-) Costos Fijos"],
+        "regla_oro": (
+            "1) Todos los valores del Estado de Resultados deben ir **Netos de IVA** (si un monto está en Bruto, divídelo por `1,19`). "
+            "2) Los **Ingresos** llevan signo positivo (`+`) y los **Costos Variables y Fijos** llevan signo negativo (`-`). "
+            "3) En el `Año 0` estas tres filas valen `0`."
+        ),
+        "formula_fx": "D5 = Ingreso_Neto_A1*(1+g)  |  D6 = -Costo_Var_Neto  |  D7 = -Costo_Fijo_Neto",
+    },
+    {
+        "num": 2,
+        "titulo": "Paso 2: Deducciones Contables y Escudo Fiscal (Depreciación, Amortización e Intereses)",
+        "filas": ["(-) Depreciación", "(-) Amort. Intangibles", "(-) Intereses Deuda"],
+        "regla_oro": (
+            "1) La **Depreciación Anual** `-(Valor Neto - Valor Rescate) / Vida Útil` y la **Amortización de Intangibles** se restan con signo negativo (`-`) antes de impuestos para rebajar la base imponible. "
+            "2) Si evalúas el **Flujo de Caja Libre (FCL)** (proyecto puro sin deuda), la fila `(-) Intereses Deuda` es `0`. Si evalúas el **Flujo del Inversionista (FCI)**, resta aquí el interés anual de la tabla de amortización."
+        ),
+        "formula_fx": "D8 = -(Activo_Neto - Rescate)/Vida_Util  |  D10 = -Saldo_Anterior * Kd (solo en FCI)",
+    },
+    {
+        "num": 3,
+        "titulo": "Paso 3: Utilidad Antes de Impuestos (BAI), Impuesto (29,5%) y Utilidad Neta (BDI)",
+        "filas": ["(=) BAI", "(-) Impuesto (29.5%)", "(=) BDI"],
+        "regla_oro": (
+            "1) **`(=) BAI`**: Suma verticalmente desde `(+) Ingresos` hasta `(-) Intereses Deuda` (`=SUMA(D5:D10)`). "
+            "2) **`(-) Impuesto`**: Multiplica el BAI por la tasa de impuesto y colócalo con **signo negativo** (`=-D11 * Tasa_Imp`). "
+            "3) **`(=) BDI`**: Suma `BAI + Impuesto` (`=D11 + D12`)."
+        ),
+        "formula_fx": "D11 = SUMA(D5:D10)  |  D12 = -D11 * 29,5%  |  D13 = D11 + D12",
+    },
+    {
+        "num": 4,
+        "titulo": "Paso 4: Reverso de Partidas No Monetarias (+Depreciación y +Amortización)",
+        "filas": ["(+) Depreciación", "(+) Amort. Intangibles"],
+        "regla_oro": (
+            "Como la depreciación y la amortización de intangibles **no son salidas reales de efectivo** (solo se restaron en el Paso 2 para ahorrar impuestos), "
+            "ahora debes **sumarlas de vuelta con signo positivo (`+`)** por exactamente el mismo monto anual."
+        ),
+        "formula_fx": "D14 = -D8 (+Depreciación)  |  D15 = -D9 (+Amortización Intangibles)",
+    },
+    {
+        "num": 5,
+        "titulo": "Paso 5: Movimientos de Capital (Año 0 y Año Final) y (=) FLUJO DE CAJA NETO",
+        "filas": [
+            "(-) Inversión Inicial",
+            "(+) Préstamo",
+            "(-) Amortización Deuda",
+            "(+) Valor Rescate",
+            "(+) Recup. Cap. Trabajo",
+            "(=) FLUJO CAJA NETO",
+        ],
+        "regla_oro": (
+            "1) En el **`Año 0`**, anota la `(-) Inversión Inicial` total neta con signo negativo (`-`) y, si es Flujo del Inversionista, suma el `(+) Préstamo` con signo positivo (`+`). "
+            "2) En el **último año**, suma el `(+) Valor Rescate` de los activos fijos y el 100% de la `(+) Recup. Cap. Trabajo`. "
+            "3) Calcula **`(=) FLUJO CAJA NETO`** sumando desde `(=) BDI` hasta `(+) Recup. Cap. Trabajo` (`=SUMA(C13:C20)`)."
+        ),
+        "formula_fx": "C21 = SUMA(C13:C20)  |  En Año N: incluir +Valor Rescate y +Recup. Capital de Trabajo",
+    },
+    {
+        "num": 6,
+        "titulo": "Paso 6: Descuento a Valor Presente (VP), Flujo Acumulado, VAN y TIR",
+        "filas": ["Flujo Actualizado (VP)", "Flujo Acumulado"],
+        "regla_oro": (
+            "1) **`Flujo Actualizado (VP)`**: Divide el Flujo de Caja Neto de cada año $t$ por $(1 + r)^t$ (**¡jamás multipliques!**). En el `Año 0`, como $(1+r)^0 = 1$, el VP es igual al flujo del Año 0. "
+            "2) **`Flujo Acumulado`**: Suma acumulativamente los Flujos de Caja Netos nominales para ver en qué año se recupera la inversión (Payback)."
+        ),
+        "formula_fx": "D23 = D21 / ((1 + Tasa_Descuento)^t)  |  VAN = SUMA(C23:I23)  |  TIR = TIR(C21:I21)",
+    },
+]
+
+
+def renderizar_taller_paso_a_paso_en_hoja(
+    plantilla_nombre: str,
+    df_fcl_sol: pd.DataFrame,
+    df_fci_sol: pd.DataFrame,
+    van_fcl_sol: float,
+    tir_fcl_sol: float,
+    van_fci_sol: float,
+    tir_fci_sol: float,
+    tasa_fcl: float,
+    tasa_ke: float,
+    tasa_imp: float,
+    total_inv_neta: float,
+    monto_credito: float,
+    dep_anual_total: float,
+    total_rescate_af: float,
+    total_recup_ct: float,
+):
+    """
+    Renderiza una hoja de cálculo interactiva paso a paso donde el alumno puede escribir
+    directamente en las celdas, autocompletar por etapas y recibir corrección instantánea.
+    """
+    inyectar_estilos_burbujas_finanzas()
+
+    st.markdown(
+        '<span class="fin-badge">Modo Pizarra Interactiva — Aprende Construyendo el Flujo Celda por Celda en la Hoja</span>',
+        unsafe_allow_html=True,
+    )
+
+    c_top1, c_top2, c_top3 = st.columns([1.5, 1.8, 1.2])
+    with c_top1:
+        tipo_practica = st.radio(
+            "1. ¿Qué hoja deseas construir paso a paso?",
+            ["Flujo de Caja Libre (FCL — Proyecto Puro)", "Flujo del Inversionista (FCI — Con Deuda)"],
+            horizontal=False,
+            key="piz_tipo_flujo",
+        )
+    es_fci = "Inversionista" in tipo_practica
+    df_sol = df_fci_sol.copy() if es_fci else df_fcl_sol.copy()
+    van_sol = van_fci_sol if es_fci else van_fcl_sol
+    tir_sol = tir_fci_sol if es_fci else tir_fcl_sol
+    tasa_usada = tasa_ke if es_fci else tasa_fcl
+
+    with c_top2:
+        opciones_pasos = [f"{p['titulo']}" for p in DEFINICION_PASOS_HOJA]
+        paso_sel_txt = st.selectbox(
+            "2. Selecciona el Paso de Construcción Activo (1 al 6):",
+            options=opciones_pasos,
+            index=0,
+            key="piz_paso_activo",
+        )
+        paso_obj = next(p for p in DEFINICION_PASOS_HOJA if p["titulo"] == paso_sel_txt)
+        num_paso = paso_obj["num"]
+
+    with c_top3:
+        tol_pesos = st.number_input(
+            "3. Tolerancia de redondeo ($ CLP):",
+            min_value=1.0,
+            max_value=50000.0,
+            value=500.0,
+            step=100.0,
+            help="Acepta pequeñas diferencias por decimales al escribir en la hoja.",
+            key="piz_tol",
+        )
+
+    # Inicializar el estado de la hoja del alumno en st.session_state
+    state_key = f"hoja_alumno_{plantilla_nombre}_{'FCI' if es_fci else 'FCL'}_{len(df_sol.columns)}"
+    if state_key not in st.session_state:
+        df_init = pd.DataFrame(0.0, index=df_sol.index, columns=df_sol.columns)
+        # Pre-cargar el Paso 1 por defecto salvo las filas que el alumno quiera practicar, o iniciar con todo en 0
+        st.session_state[state_key] = df_init
+
+    # Botonera de acciones pedagógicas rápidas sobre la hoja
+    b_ac1, b_ac2, b_ac3, b_ac4 = st.columns(4)
+    with b_ac1:
+        if st.button(f"Autocompletar solo el Paso {num_paso}", use_container_width=True, key="btn_fill_curr"):
+            df_curr = st.session_state[state_key].copy()
+            for f_nom in paso_obj["filas"]:
+                if f_nom in df_sol.index:
+                    df_curr.loc[f_nom] = df_sol.loc[f_nom]
+            st.session_state[state_key] = df_curr
+            st.rerun()
+
+    with b_ac2:
+        if st.button(f"Autocompletar desde Paso 1 hasta Paso {num_paso}", type="primary", use_container_width=True, key="btn_fill_upto"):
+            df_curr = pd.DataFrame(0.0, index=df_sol.index, columns=df_sol.columns)
+            for p_i in DEFINICION_PASOS_HOJA:
+                if p_i["num"] <= num_paso:
+                    for f_nom in p_i["filas"]:
+                        if f_nom in df_sol.index:
+                            df_curr.loc[f_nom] = df_sol.loc[f_nom]
+            st.session_state[state_key] = df_curr
+            st.rerun()
+
+    with b_ac3:
+        if st.button("Resolver toda la Hoja (100%)", use_container_width=True, key="btn_fill_all"):
+            st.session_state[state_key] = df_sol.astype(float).copy()
+            st.rerun()
+
+    with b_ac4:
+        if st.button("Vaciar Hoja (Practicar desde Cero)", use_container_width=True, key="btn_clear_all"):
+            st.session_state[state_key] = pd.DataFrame(0.0, index=df_sol.index, columns=df_sol.columns)
+            st.rerun()
+
+    # Tarjeta de instrucción del Paso Activo + Fórmula fx
+    filas_paso_str = ", ".join(f"`{f}`" for f in paso_obj["filas"])
+    st.markdown(
+        f"""
+        <div class="paso-box">
+            <b>{paso_obj['titulo']}</b><br>
+            <b>Filas que debes completar en este paso:</b> {filas_paso_str}<br>
+            <b>Regla de Cátedra:</b> {paso_obj['regla_oro']}<br>
+            <span style="font-family:Consolas,monospace;font-size:12px;background:#ffffff;border:1px solid #cbd5e1;padding:2px 8px;border-radius:4px;display:inline-block;margin-top:5px;">
+                <b>fx Fórmula Excel del Paso {num_paso}:</b> {paso_obj['formula_fx']}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Pistas numéricas desplegables para que el alumno pueda hacer el cálculo a mano o en calculadora
+    with st.expander(f"Ver Datos Base del {plantilla_nombre} para calcular a mano las celdas del Paso {num_paso}", expanded=False):
+        p_col1, p_col2, p_col3 = st.columns(3)
+        with p_col1:
+            st.markdown(
+                f"- **Inversión Neta Año 0:** `${total_inv_neta:,.0f}`\n"
+                f"- **Préstamo Año 0 (FCI):** `${monto_credito:,.0f}`\n"
+                f"- **Depreciación Anual:** `${dep_anual_total:,.0f}`"
+            )
+        with p_col2:
+            st.markdown(
+                f"- **Tasa Impuesto:** `{tasa_imp*100:.1f}%`\n"
+                f"- **Tasa Descuento Exigida ($r$):** `{tasa_usada*100:.2f}%`\n"
+                f"- **Valor Rescate + Rec. CT (Último Año):** `${total_rescate_af:,.0f}` + `${total_recup_ct:,.0f}`"
+            )
+        with p_col3:
+            st.markdown("**Valores esperados en las filas de este paso:**")
+            st.dataframe(df_sol.loc[paso_obj["filas"]].style.format("{:,.0f}"), use_container_width=True)
+
+    # Editor de Hoja en Vivo donde el alumno escribe
+    st.markdown("##### Escribe tus resultados directamente en las celdas de la hoja (presiona `Enter` o `Tab` al terminar cada celda):")
+    df_usuario_edit = st.data_editor(
+        st.session_state[state_key],
+        use_container_width=True,
+        height=470,
+        key=f"editor_pizarra_{state_key}",
+    )
+    st.session_state[state_key] = df_usuario_edit.copy()
+
+    # ==========================================================================
+    # AUDITORÍA AUTOMÁTICA CELDA POR CELDA Y DETECCIÓN DE ERRORES DE CÁTEDRA
+    # ==========================================================================
+    mat_usr = df_usuario_edit.to_numpy(dtype=float)
+    mat_sol = df_sol.to_numpy(dtype=float)
+    diff_abs = np.abs(mat_usr - mat_sol)
+    celdas_ok = diff_abs <= tol_pesos
+
+    total_celdas = int(mat_sol.size)
+    total_ok = int(np.sum(celdas_ok))
+    pct_progreso = (total_ok / max(total_celdas, 1)) * 100.0
+
+    # Evaluar progreso específico del Paso Activo
+    idx_filas_paso = [df_sol.index.get_loc(f) for f in paso_obj["filas"] if f in df_sol.index]
+    celdas_paso_ok = int(np.sum(celdas_ok[idx_filas_paso, :]))
+    celdas_paso_tot = len(idx_filas_paso) * len(df_sol.columns)
+    pct_paso = (celdas_paso_ok / max(celdas_paso_tot, 1)) * 100.0
+
+    st.progress(min(pct_progreso / 100.0, 1.0), text=f"Progreso Global de tu Hoja: {total_ok}/{total_celdas} celdas correctas ({pct_progreso:.1f}%)  |  Paso {num_paso}: {celdas_paso_ok}/{celdas_paso_tot} ({pct_paso:.0f}%)")
+
+    # Detectar errores conceptuales frecuentes en las filas editadas
+    diagnosticos = []
+    for f_nom in paso_obj["filas"]:
+        if f_nom not in df_sol.index:
+            continue
+        for col_nom in df_sol.columns:
+            v_u = float(df_usuario_edit.loc[f_nom, col_nom])
+            v_s = float(df_sol.loc[f_nom, col_nom])
+            if abs(v_u - v_s) <= tol_pesos:
+                continue
+            if abs(v_u) < 1e-4 and abs(v_s) > tol_pesos:
+                diagnosticos.append(f"Celda pendiente en **{f_nom} ({col_nom})**: aún está en `0` (valor correcto: `${v_s:,.0f}`).")
+            elif abs(v_u + v_s) <= max(tol_pesos, abs(v_s) * 0.02):
+                diagnosticos.append(
+                    f"⚠️ **Error de Signo en {f_nom} ({col_nom})**: escribiste `${v_u:,.0f}`, pero lleva el signo opuesto (`${v_s:,.0f}`)."
+                )
+            elif abs(v_u - v_s * 1.19) <= max(tol_pesos, abs(v_s) * 0.02):
+                diagnosticos.append(
+                    f"⚠️ **Error de IVA en {f_nom} ({col_nom})**: ingresaste el monto **Bruto con IVA** (`${v_u:,.0f}`). Debes dividir por `1,19` para usar el Valor Neto (`${v_s:,.0f}`)."
+                )
+            elif f_nom == "Flujo Actualizado (VP)" and col_nom != "Año 0":
+                t_num = int(str(col_nom).replace("Año ", ""))
+                v_mult = float(df_sol.loc["(=) FLUJO CAJA NETO", col_nom]) * ((1.0 + tasa_usada) ** t_num)
+                if abs(v_u - v_mult) <= max(5000.0, abs(v_s) * 0.03):
+                    diagnosticos.append(
+                        f"🚨 **Trampa del Ejercicio 7 en {f_nom} ({col_nom})**: ¡Multiplicaste por `(1+r)^t` en vez de dividir! Para traer a Valor Presente debes dividir: `${v_s:,.0f}`."
+                    )
+                else:
+                    diagnosticos.append(
+                        f"❌ Diferencia en **{f_nom} ({col_nom})**: anotaste `${v_u:,.0f}` vs. valor esperado `${v_s:,.0f}`."
+                    )
+            else:
+                diagnosticos.append(
+                    f"❌ Diferencia en **{f_nom} ({col_nom})**: anotaste `${v_u:,.0f}` vs. valor esperado `${v_s:,.0f}` (diferencia de `${v_u - v_s:+,.0f}`)."
+                )
+
+    c_aud1, c_aud2 = st.columns([1.35, 1.0])
+    with c_aud1:
+        st.markdown("##### Mapa Visual de Corrección de tu Hoja (Verde = Correcto | Rojo = Revisar)")
+
+        def _colorear_revision(df_in):
+            estilos = pd.DataFrame("", index=df_in.index, columns=df_in.columns)
+            for r_i, r_name in enumerate(df_in.index):
+                es_fila_paso = r_name in paso_obj["filas"]
+                for c_i, c_name in enumerate(df_in.columns):
+                    ok = celdas_ok[r_i, c_i]
+                    val_u = mat_usr[r_i, c_i]
+                    val_s = mat_sol[r_i, c_i]
+                    if ok:
+                        if abs(val_s) > 0 or es_fila_paso:
+                            estilos.iloc[r_i, c_i] = "background-color: #dcfce7; color: #166534; font-weight: 600;"
+                        else:
+                            estilos.iloc[r_i, c_i] = "color: #64748b;"
+                    else:
+                        if abs(val_u) < 1e-4 and es_fila_paso:
+                            estilos.iloc[r_i, c_i] = "background-color: #fef9c3; color: #854d0e; font-weight: 600;"
+                        else:
+                            estilos.iloc[r_i, c_i] = "background-color: #fee2e2; color: #991b1b; font-weight: 700;"
+            return estilos
+
+        st.dataframe(
+            df_usuario_edit.style.format("{:,.0f}").apply(_colorear_revision, axis=None),
+            use_container_width=True,
+            height=380,
+        )
+
+    with c_aud2:
+        st.markdown(f"##### Retroalimentación en Vivo — Paso {num_paso}")
+        if not diagnosticos:
+            st.success(f"✅ **¡Excelente!** Todas las celdas del **Paso {num_paso}** están 100% correctas. Puedes avanzar al siguiente paso.")
+        else:
+            for d_msg in diagnosticos[:8]:
+                st.warning(d_msg)
+            if len(diagnosticos) > 8:
+                st.caption(f"... y {len(diagnosticos) - 8} celdas adicionales pendientes en este paso.")
+
+        st.markdown("---")
+        st.markdown("##### Comprobación Final de Indicadores (Tu Cálculo vs. Oficial)")
+        p_v1, p_v2 = st.columns(2)
+        with p_v1:
+            van_usr_in = st.number_input("Escribe tu VAN calculado ($):", value=0.0, step=1000000.0, format="%.0f", key="piz_van_in")
+            if abs(van_usr_in - van_sol) <= max(tol_pesos * 10, 5000.0):
+                st.success(f"✅ VAN Correcto: `${van_sol:,.0f}`")
+            elif van_usr_in != 0.0:
+                st.error(f"❌ Revisa: el VAN oficial es `${van_sol:,.0f}`")
+        with p_v2:
+            tir_usr_in = st.number_input("Escribe tu TIR calculada (%):", value=0.0, step=0.1, format="%.2f", key="piz_tir_in")
+            if abs(tir_usr_in - tir_sol * 100.0) <= 0.15:
+                st.success(f"✅ TIR Correcta: `{tir_sol*100:.2f}%`")
+            elif tir_usr_in != 0.0:
+                st.error(f"❌ Revisa: la TIR oficial es `{tir_sol*100:.2f}%`")
+
+
+# ==============================================================================
+# 3. GRÁFICOS INTERACTIVOS PLOTLY PARA FLUJO DE CAJA, SENSIBILIDAD Y MONTE CARLO
 # ==============================================================================
 
 def graficar_perfil_van_y_tir(
@@ -98,10 +479,6 @@ def graficar_perfil_van_y_tir(
     tir_fcl: float,
     tir_fci: float,
 ):
-    """
-    Construye el Perfil del VAN en función de la tasa de descuento r (0% a 45%)
-    comparando el Flujo de Caja Libre (FCL) y el Flujo del Inversionista (FCI).
-    """
     tasas_r = np.linspace(0.0, 0.45, 91)
     van_fcl_vec = [
         sum(flujos_fcl[t] / ((1.0 + r) ** t) for t in range(len(flujos_fcl)))
@@ -198,10 +575,6 @@ def graficar_cascada_operativa_anual(
     resc_t: float,
     es_inversionista: bool = False,
 ):
-    """
-    Construye un gráfico Waterfall (Cascada) que explica pedagógicamente cómo se forma el
-    Flujo de Caja Neto del año seleccionado, destacando el escudo fiscal y el reverso contable.
-    """
     bai = ing_t - cv_t - cf_t - dep_t - amo_t - (int_t if es_inversionista else 0.0)
     imp = max(0.0, bai * tasa_imp) if bai > 0 else bai * tasa_imp
     bdi = bai - imp
@@ -261,7 +634,7 @@ def graficar_cascada_operativa_anual(
     )
     tipo_txt = "Flujo del Inversionista (FCI)" if es_inversionista else "Flujo de Caja Libre (FCL)"
     fig.update_layout(
-        title=f" anatomía en Cascada del {tipo_txt} — Año {anio_sel} (Flujo Neto = ${fn:,.0f})",
+        title=f"Anatomía en Cascada del {tipo_txt} — Año {anio_sel} (Flujo Neto = ${fn:,.0f})",
         yaxis_title="Monto ($ CLP)",
         height=370,
         margin=dict(l=15, r=15, t=45, b=20),
@@ -282,15 +655,11 @@ def graficar_tornado_sensibilidad(
     van_tasa_alta: float,
     titulo_flujo: str = "FCL",
 ):
-    """
-    Construye un Gráfico de Tornado ordenando las variables críticas según la amplitud
-    de su impacto sobre el VAN ante variaciones simétricas de ±10%.
-    """
     items = [
-        ("Ingresos Operacionales (±10%)", van_ing_bajo - van_base, van_ing_alto - van_base, van_ing_bajo, van_ing_alto),
-        ("Inversión Inicial CAPEX (±10%)", van_capex_alto - van_base, van_capex_bajo - van_base, van_capex_alto, van_capex_bajo),
-        ("Costos Variables (±10%)", van_cv_alto - van_base, van_cv_bajo - van_base, van_cv_alto, van_cv_bajo),
-        ("Tasa de Descuento (±10% rel.)", van_tasa_alta - van_base, van_tasa_baja - van_base, van_tasa_alta, van_tasa_baja),
+        ("Ingresos Operacionales (±10%)", van_ing_bajo - van_base, van_ing_alto - van_base),
+        ("Inversión Inicial CAPEX (±10%)", van_capex_alto - van_base, van_capex_bajo - van_base),
+        ("Costos Variables (±10%)", van_cv_alto - van_base, van_cv_bajo - van_base),
+        ("Tasa de Descuento (±10% rel.)", van_tasa_alta - van_base, van_tasa_baja - van_base),
     ]
     items.sort(key=lambda x: abs(x[2] - x[1]))
 
@@ -340,11 +709,6 @@ def graficar_montecarlo_avanzado_plotly(
     var_95_mc: float,
     prob_exito_mc: float,
 ):
-    """
-    Genera dos visualizaciones interactivas en Plotly para la Simulación de Monte Carlo:
-    1) Histograma de densidad con líneas verticales en VAN = $0, VaR 95% y Media.
-    2) Curva S de Probabilidad Acumulada (CDF) para lectura de percentiles de riesgo.
-    """
     fig_hist = go.Figure()
     fig_hist.add_trace(
         go.Histogram(
@@ -420,7 +784,7 @@ def graficar_montecarlo_avanzado_plotly(
 
 
 # ==============================================================================
-# 3. LABORATORIOS INTERACTIVOS DE CÁTEDRA (FISHER, RIESGO Y MARKOWITZ IPSA)
+# 4. LABORATORIOS INTERACTIVOS DE CÁTEDRA (FISHER, RIESGO Y MARKOWITZ IPSA)
 # ==============================================================================
 
 def renderizar_laboratorio_catedra_finanzas():
@@ -443,9 +807,6 @@ def renderizar_laboratorio_catedra_finanzas():
         "3. Taller Frontera Eficiente Markowitz ($65M — Dupla 13 IPSA vs. 30 Títulos)",
     ])
 
-    # --------------------------------------------------------------------------
-    # SUB-TAB 1: MODELO CONSUMO-INVERSIÓN Y PRINCIPIO DE SEPARACIÓN DE FISHER
-    # --------------------------------------------------------------------------
     with tabs_lab[0]:
         st.subheader("Modelo Intertemporal Consumo-Inversión y Principio de Separación de Fisher")
         st.markdown(
@@ -485,10 +846,9 @@ def renderizar_laboratorio_catedra_finanzas():
         with cf4:
             impaciencia_alpha = st.slider(
                 "4. Preferencia por Consumo Presente α (0,2=Ahorrador | 0,8=Deudor):",
-                0.20, 0.85, 0.45, 0.05, key="fsh_alpha"
+                0.20, 0.85, 0.45, 0.05, key="fsh_alpha",
             )
 
-        # Función productiva cóncava: F(I0) = A * sqrt(I0) -> F'(I0) = A / (2*sqrt(I0)) = 1 + rf
         i0_opt = min(dotacion_y0, (prod_escala / (2.0 * (1.0 + tasa_rf_fsh))) ** 2)
         c0_prod = dotacion_y0 - i0_opt
         c1_prod = prod_escala * np.sqrt(i0_opt)
@@ -496,10 +856,9 @@ def renderizar_laboratorio_catedra_finanzas():
         riqueza_total_w0 = dotacion_y0 + van_fisher
         riqueza_futura_w1 = riqueza_total_w0 * (1.0 + tasa_rf_fsh)
 
-        # Óptimo de consumo Cobb-Douglas: U(C0, C1) = (C0^alpha) * (C1^(1-alpha))
         c0_cons = impaciencia_alpha * riqueza_total_w0
         c1_cons = (1.0 - impaciencia_alpha) * riqueza_futura_w1
-        flujo_mercado_c0 = c0_cons - c0_prod  # >0 pide prestado hoy; <0 presta/ahorra hoy
+        flujo_mercado_c0 = c0_cons - c0_prod
 
         perfil_inv = (
             "Prestatario / Deudor en t=0 (Pide prestado en el mercado financiero para consumir más hoy)"
@@ -523,7 +882,6 @@ def renderizar_laboratorio_catedra_finanzas():
 
         st.info(f"**Diagnóstico de Cátedra:** {perfil_inv}.")
 
-        # Construcción del gráfico de Fisher en Plotly
         i_grid = np.linspace(0.0, dotacion_y0, 120)
         c0_frontera = dotacion_y0 - i_grid
         c1_frontera = prod_escala * np.sqrt(i_grid)
@@ -580,7 +938,7 @@ def renderizar_laboratorio_catedra_finanzas():
                 x=[c0_prod],
                 y=[c1_prod],
                 mode="markers+text",
-                text=[f"P* Óptimo Productivo (RMgI = rf)"],
+                text=["P* Óptimo Productivo (RMgI = rf)"],
                 textposition="bottom left",
                 marker=dict(size=13, color="#1d4ed8", symbol="diamond", line=dict(width=2, color="white")),
                 name="P* (Óptimo Productivo)",
@@ -591,7 +949,7 @@ def renderizar_laboratorio_catedra_finanzas():
                 x=[c0_cons],
                 y=[c1_cons],
                 mode="markers+text",
-                text=[f"C* Óptimo Consumo (TMS = -(1+rf))"],
+                text=["C* Óptimo Consumo (TMS = -(1+rf))"],
                 textposition="top right",
                 marker=dict(size=14, color="#059669", symbol="star", line=dict(width=2, color="white")),
                 name="C* (Óptimo Consumo)",
@@ -608,9 +966,6 @@ def renderizar_laboratorio_catedra_finanzas():
         )
         st.plotly_chart(fig_fsh, use_container_width=True)
 
-    # --------------------------------------------------------------------------
-    # SUB-TAB 2: ACTITUDES FRENTE AL RIESGO, JUEGO JUSTO Y EQUIVALENTE CIERTO
-    # --------------------------------------------------------------------------
     with tabs_lab[1]:
         st.subheader("Actitudes frente al Riesgo, Juego Justo y Prima por Riesgo (`Relación riesgo rentabilidad.pdf`)")
         st.markdown(
@@ -734,9 +1089,6 @@ def renderizar_laboratorio_catedra_finanzas():
         )
         st.plotly_chart(fig_u, use_container_width=True)
 
-    # --------------------------------------------------------------------------
-    # SUB-TAB 3: TALLER FRONTERA EFICIENTE MARKOWITZ ($65M — DUPLA 13 IPSA) Y CAPM
-    # --------------------------------------------------------------------------
     with tabs_lab[2]:
         st.subheader("Taller de Frontera Eficiente de Markowitz (252 días bursátiles) y CAPM — Dupla 13 IPSA")
         st.markdown(
@@ -790,7 +1142,6 @@ def renderizar_laboratorio_catedra_finanzas():
         with cm3:
             permitir_cortos = st.checkbox("Permitir ventas cortas (pesos negativos w_i < 0)", value=False, key="mk_short")
 
-        # Datos base representativos de los 5 títulos IPSA (Dupla 13)
         activos_dupla13 = [
             "PARAUCO (Parque Arauco)",
             "ANDINA-B (Emb. Andina)",
@@ -812,7 +1163,6 @@ def renderizar_laboratorio_catedra_finanzas():
         vol_d = df_act_ed["Volatilidad Diaria σ_d (%)"].to_numpy(dtype=float) / 100.0
         betas_i = df_act_ed["Beta de Mercado (β_i)"].to_numpy(dtype=float)
 
-        # Anualización sobre 252 días bursátiles
         ret_anual = (1.0 + ret_d) ** 252 - 1.0
         vol_anual = vol_d * np.sqrt(252.0)
 
@@ -830,7 +1180,6 @@ def renderizar_laboratorio_catedra_finanzas():
         restriccion_suma = {"type": "eq", "fun": lambda w: np.sum(w) - 1.0}
         w_init = np.ones(n_act) / n_act
 
-        # 1) Portafolio de Mínima Varianza Global (GMVP)
         res_gmvp = minimize(
             lambda w: float(np.sqrt(np.dot(w.T, np.dot(cov_anual, w)))),
             w_init,
@@ -843,7 +1192,6 @@ def renderizar_laboratorio_catedra_finanzas():
         vol_gmvp = float(np.sqrt(np.dot(w_gmvp.T, np.dot(cov_anual, w_gmvp))))
         sharpe_gmvp = (ret_gmvp - rf_bcentral) / max(vol_gmvp, 1e-6)
 
-        # 2) Portafolio Tangente (Máximo Ratio de Sharpe)
         def neg_sharpe(w):
             r_p = float(np.dot(w, ret_anual))
             v_p = float(np.sqrt(np.dot(w.T, np.dot(cov_anual, w))))
@@ -861,7 +1209,6 @@ def renderizar_laboratorio_catedra_finanzas():
         vol_tan = float(np.sqrt(np.dot(w_tan.T, np.dot(cov_anual, w_tan))))
         sharpe_tan = (ret_tan - rf_bcentral) / max(vol_tan, 1e-6)
 
-        # 3) Portafolio Equiponderado (1/N = 20% cada acción)
         w_eq = w_init
         ret_eq = float(np.dot(w_eq, ret_anual))
         vol_eq = float(np.sqrt(np.dot(w_eq.T, np.dot(cov_anual, w_eq))))
@@ -873,7 +1220,6 @@ def renderizar_laboratorio_catedra_finanzas():
         km3.metric("Cartera Equiponderada (20% c/u)", f"E(R) = {ret_eq*100:.2f}%", f"σ = {vol_eq*100:.2f}% | Sharpe = {sharpe_eq:.2f}")
         km4.metric("Capital Asignado (100%)", f"${monto_taller:,.0f}", "Dupla 13 — 5 acciones IPSA")
 
-        # Generación de nube de portafolios y curva de frontera eficiente
         np.random.seed(13)
         pesos_mc = np.random.dirichlet(np.ones(n_act), size=1200)
         rets_nube = pesos_mc @ ret_anual
@@ -926,7 +1272,6 @@ def renderizar_laboratorio_catedra_finanzas():
                     name="Frontera Eficiente (5 Títulos IPSA)",
                 )
             )
-            # Frontera referencial de 30 acciones del IPSA (mayor diversificación reduce sigma no sistemático)
             fig_mk.add_trace(
                 go.Scatter(
                     x=np.array(front_vols) * 100.0 * 0.84,
@@ -936,7 +1281,6 @@ def renderizar_laboratorio_catedra_finanzas():
                     name="Frontera Eficiente Referencial (30 Títulos IPSA)",
                 )
             )
-            # Línea del Mercado de Capitales (CML)
             sigma_cml = np.linspace(0.0, max(vol_anual) * 1.05, 50)
             ret_cml = rf_bcentral + sharpe_tan * sigma_cml
             fig_mk.add_trace(
@@ -1016,11 +1360,9 @@ def renderizar_laboratorio_catedra_finanzas():
                 hide_index=True,
             )
 
-            # Línea del Mercado de Títulos (SML — CAPM)
             rm_ipsa = float(np.mean(ret_anual))
             beta_grid = np.linspace(0.0, 1.6, 50)
             sml_ret = rf_bcentral + beta_grid * (rm_ipsa - rf_bcentral)
-            ret_capm_i = rf_bcentral + betas_i * (rm_ipsa - rf_bcentral)
 
             fig_sml = go.Figure()
             fig_sml.add_trace(
