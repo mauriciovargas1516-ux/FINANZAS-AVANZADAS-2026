@@ -190,6 +190,24 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   .qz-btn.sel { background: #0F172A; color: #FFFFFF; border-color: #0F172A; }
   .qz-fb { font-size: 11.5px; color: #1E293B; margin-top: 7px; line-height: 1.42; display: none; border-top: 1px dashed #CBD5E1; padding-top: 6px; }
   .qz-card.answered .qz-fb { display: block; }
+  /* === CÁPSULAS PEDAGÓGICAS VIVAS DENTRO DE CADA INTERACTIVO === */
+  .ped-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px;
+  }
+  @media (max-width: 860px) { .ped-grid { grid-template-columns: 1fr; } }
+  .ped-card {
+    background: #F8FAFC; border: 1px solid #CBD5E1; border-top: 3.5px solid #1D4ED8;
+    border-radius: 6px; padding: 9px 11px; font-size: 11.7px; line-height: 1.46; color: #1E293B;
+  }
+  .ped-card.p-cur { border-top-color: #7C3AED; background: #FAF5FF; }
+  .ped-card.p-def { border-top-color: #059669; background: #F0FDF4; }
+  .ped-hd {
+    font-size: 10.6px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;
+    margin-bottom: 5px; color: #1E3A8A;
+  }
+  .ped-card.p-cur .ped-hd { color: #6D28D9; }
+  .ped-card.p-def .ped-hd { color: #065F46; }
+  .ped-card b { color: #0F172A; }
   .g-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 7px 0; }
   .g-tbl th { background: #1E293B; color: #FFFFFF; padding: 5px 7px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; }
   .g-tbl td { padding: 5px 7px; border: 1px solid #CBD5E1; text-align: right; font-family: Consolas, monospace; color: #0F172A; }
@@ -264,6 +282,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 
     <div class="svg-box"><svg id="svg-fisher" viewBox="0 0 980 395"></svg></div>
     <div id="fs-sol" class="sol-box"></div>
+    <div id="ped-fisher" class="ped-grid"></div>
   </div>
 
   <!-- ====================================================================== -->
@@ -304,6 +323,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     </div>
 
     <div class="svg-box"><svg id="svg-riesgo" viewBox="0 0 980 385"></svg></div>
+    <div id="ped-riesgo" class="ped-grid"></div>
   </div>
 
   <!-- ====================================================================== -->
@@ -345,6 +365,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     </div>
 
     <div class="svg-box"><svg id="svg-markowitz" viewBox="0 0 980 390"></svg></div>
+    <div id="ped-markowitz" class="ped-grid"></div>
   </div>
 
   <!-- ====================================================================== -->
@@ -386,6 +407,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 
     <div class="svg-box"><svg id="svg-hamada" viewBox="0 0 980 380"></svg></div>
     <div id="hm-sol" class="sol-box"></div>
+    <div id="ped-hamada" class="ped-grid"></div>
   </div>
 
   <!-- ====================================================================== -->
@@ -427,6 +449,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="sl-card"><div class="sl-head"><span>Rotación Activos (Ventas/Act.Op.)</span><span id="pg-r-v" class="sl-val">1,20x</span></div><input id="pg-r" type="range" min="0.2" max="4.0" step="0.1" value="1.2" oninput="drawVanTir()" /></div>
       <div id="pg-box" class="sol-box" style="margin-top:0;"></div>
     </div>
+    <div id="ped-vantir" class="ped-grid"></div>
   </div>
 
   <!-- ====================================================================== -->
@@ -665,6 +688,24 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 
 <script>
 const NS = "http://www.w3.org/2000/svg";
+function renderPedBox(id, lectura, paradoja, defensa) {
+  const box = document.getElementById(id);
+  if (!box) return;
+  box.innerHTML = `
+    <div class="ped-card">
+      <div class="ped-hd">Lectura Dinámica del Escenario</div>
+      <div>${lectura}</div>
+    </div>
+    <div class="ped-card p-cur">
+      <div class="ped-hd">Dato Curioso y Paradoja Teórica</div>
+      <div>${paradoja}</div>
+    </div>
+    <div class="ped-card p-def">
+      <div class="ped-hd">Aplicación Real y Defensa en Prueba</div>
+      <div>${defensa}</div>
+    </div>`;
+}
+
 function fmtInt(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 function fmtDec(n, d=1) {
   const s = Number(n).toFixed(d).split(".");
@@ -856,6 +897,12 @@ function drawFisher() {
   el("circle", { cx: sx(cur.c0c), cy: sy(cur.c1c), r: 7.5, fill: "#059669", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
   const tC = el("text", { x: sx(cur.c0c) + 10, y: sy(cur.c1c) - 8, fill: "#065F46", "font-size": "11.5", "font-weight": "800", "text-anchor": "start" }, svg);
   tC.textContent = "C* (Óptimo Consumo)";
+
+  renderPedBox("ped-fisher",
+    `La firma invierte <b>I<sub>0</sub>* = $${fmtDec(cur.i0,1)}M</b> creando un <b>VAN de +$${fmtDec(cur.van,1)}M</b> y expandiendo la riqueza presente a <b>W<sub>0</sub>* = $${fmtDec(cur.w0,1)}M</b>. Con impaciencia α = ${fmtDec(al,2)}, el accionista ${cur.prestamo > 0.5 ? `pide prestado $${fmtDec(cur.prestamo,1)}M en t=0` : (cur.prestamo < -0.5 ? `presta $${fmtDec(Math.abs(cur.prestamo),1)}M en t=0` : "consume exactamente el flujo productivo")}.`,
+    `<b>¿Por qué un accionista gastador y uno ahorrador votan IGUAL en la junta?</b> Porque invertir en el punto <b>P*</b> empuja la Línea del Mercado de Capitales lo más afuera posible (máximo W<sub>0</sub>*). Una vez maximizada la torta, el ahorrador presta su excedente y el impaciente pide prestado contra sus utilidades futuras.`,
+    `Clave de examen (Brealey, Myers y Allen Cap. 2): el Teorema de Separación de Fisher es el fundamento teórico que autoriza delegar la gerencia bajo una sola regla objetiva: <b>maximizar el VAN</b> (y se rompe si la tasa de crédito supera la tasa de ahorro).`
+  );
 }
 
 // ============================================================================
@@ -949,6 +996,12 @@ function drawRiesgo() {
   tEc.textContent = `EC = $${fmtDec(ec, 1)}M`;
   const tEw = el("text", { x: sx(ew) + 8, y: sy(uEw) - 8, fill: "#1E3A8A", "font-size": "11.5", "font-weight": "800", "text-anchor": "start" }, svg);
   tEw.textContent = `U(E[W])`;
+
+  renderPedBox("ped-riesgo",
+    `Frente a un valor esperado de <b>$${fmtDec(ew,1)}M</b>, este individuo (${actLbl}) valora la lotería igual que <b>$${fmtDec(ec,1)}M seguros</b> (Equivalente Cierto). Su Prima por Riesgo es <b>${pi >= 0 ? "+" : "-"}$${fmtDec(Math.abs(pi),1)}M</b> y su decisión racional frente a W<sub>0</sub> = $${w0}M es: <b>${dec}</b>.`,
+    `<b>Paradoja de los seguros y casinos:</b> la función cóncava (U'' &lt; 0) explica por qué una persona racional paga una prima de seguro mayor al daño esperado (quiere eliminar varianza). En cambio, solo alguien con utilidad convexa (amante del riesgo, π &lt; 0) aceptaría un juego justo o desfavorable por pura adrenalina.`,
+    `Atención en control (<i>Relación riesgo rentabilidad.pdf</i>): un inversionista averso al riesgo <b>SÍ invierte en activos riesgosos</b>, pero únicamente cuando el retorno esperado compensa su prima por riesgo (cuando <b>EC &gt; W<sub>0</sub></b>).`
+  );
 }
 
 // ============================================================================
@@ -1087,6 +1140,12 @@ function drawMarkowitz() {
     const tn = el("text", { x: sbX(ac.b), y: srY(ac.r) - 8, fill: subVal ? "#166534" : "#991B1B", "font-size": "9.8", "font-weight": "700", "text-anchor": "middle" }, svg);
     tn.textContent = ac.nm;
   });
+
+  renderPedBox("ped-markowitz",
+    `Con correlación <b>ρ = ${fmtDec(rho,2)}</b>, tu cartera (${Math.round(wa*100)}% A / ${Math.round(wb*100)}% B) logra volatilidad anual de <b>${fmtDec(curP.sd*100,1)}%</b>, ahorrando <b>${fmtDec(Math.abs(ahorroRiesgo),1)} pp</b> de riesgo frente a la combinación lineal sin diversificación. El Portafolio Tangente alcanza <b>Sharpe = ${fmtDec(bestT.sh,2)}</b>.`,
+    `<b>La única "comida gratis" en finanzas (Markowitz):</b> si arrastras ρ hacia valores negativos, verás la curva azul curvarse tanto a la izquierda que la volatilidad de la cartera combinada cae <b>por debajo</b> del activo más seguro por sí solo. Combinar dos activos volátiles que se mueven en sentido inverso cancela sus sobresaltos.`,
+    `Distingue siempre en examen: la <b>CML</b> (izquierda) mide riesgo total <b>σ<sub>p</sub></b> y solo aplica a portafolios eficientes; la <b>SML / CAPM</b> (derecha) mide riesgo sistemático <b>β</b> y aplica a cualquier acción individual (acciones sobre la SML tienen α &gt; 0 y están subvaloradas).`
+  );
 }
 
 // ============================================================================
@@ -1211,6 +1270,12 @@ function drawHamada() {
     const tl = el("text", { x: b.x + bw / 2, y: baseB + 16, fill: "#1E293B", "font-size": "10.5", "font-weight": "700", "text-anchor": "middle" }, svg);
     tl.textContent = b.lbl;
   });
+
+  renderPedBox("ped-hamada",
+    `Con <b>${dvPct}% de deuda</b> (B/S = ${fmtDec(c.bs,2)}), el apalancamiento eleva el beta del accionista de <b>β<sub>U</sub> = ${fmtDec(bu,2)}</b> a <b>β<sub>L</sub> = ${fmtDec(c.bl,2)}</b> y exige un <b>K<sub>e</sub> = ${fmtDec(c.ke*100,2)}%</b>, pero el escudo fiscal t·B = <b>+$${fmtDec(c.escMM,1)}M</b> reduce el <b>WACC a ${fmtDec(c.wacc*100,2)}%</b>.`,
+    `<b>Paradoja de la Deuda (Modigliani-Miller con impuestos):</b> aunque endeudarse vuelve más riesgosa la acción (la curva roja K<sub>e</sub> sube sin parar), el costo promedio total (curva azul WACC) <b>baja</b> porque el Fisco subsidia una fracción t = ${fmtDec(tc*100,1)}% de los intereses. En el mundo real el límite aparece cuando la deuda excesiva dispara costos de quiebra.`,
+    `Regla de oro para evaluar proyectos: jamás restes los intereses bancarios en el <b>Flujo de Caja Libre (FCL)</b> si descuentas al WACC, porque el ahorro tributario de los intereses ya viene descontado dentro de <b>K<sub>d</sub>(1 − t)</b>.`
+  );
 }
 
 // ============================================================================
@@ -1278,6 +1343,12 @@ function drawVanTir() {
   const pgu = mOp * rot;
   document.getElementById("pg-box").innerHTML =
     `<b>PGU (DuPont Operacional):</b> Margen (${fmtDec(mOp,1)}%) × Rotación (${fmtDec(rot,2)}x) = <b>${fmtDec(pgu, 2)}%</b> de rentabilidad sobre activos operacionales.`;
+
+  renderPedBox("ped-vantir",
+    `Al <b>${fmtDec(rPct,1)}%</b>, el Proyecto A entrega <b>VAN $${fmtDec(vA,1)}M</b> (TIR ${fmtDec(tA,1)}%) y B entrega <b>VAN $${fmtDec(vB,1)}M</b> (TIR ${fmtDec(tB,1)}%). Como la tasa actual está ${rPct < rFisher ? "<b>por debajo</b> de la Tasa de Fisher (r* = " + fmtDec(rFisher,1) + "%), gana A aunque B tenga mayor TIR" : "<b>por encima</b> de la Tasa de Fisher (r* = " + fmtDec(rFisher,1) + "%), ambos criterios coinciden en B"}.`,
+    `<b>¿Por qué la TIR "miente" frente al VAN?</b> La TIR asume implícitamente que podrás reinvertir todos los flujos intermedios a esa misma TIR altísima (ej. 27%), lo cual suele ser irreal. El VAN asume reinversión a la tasa de mercado/costo de capital (r). En DuPont/PGU ocurre algo parecido: un supermercado con margen de 6% puede igualar la rentabilidad de una boutique de 24% rotando sus activos 4 veces más rápido.`,
+    `En la Guía de Análisis (Ejercicios 3, 4 y 6): frente a proyectos mutuamente excluyentes o restricciones rígidas de Payback, el argumento irrebatible ante el directorio es siempre el <b>mayor VAN positivo</b> en pesos de hoy.`
+  );
 }
 
 // ============================================================================
@@ -2135,4 +2206,4 @@ drawGuiaXX();
 
 def renderizar_estudio_fluido_finanzas_60fps():
     """Renderiza el Estudio Financiero Integral a 60 FPS (8 módulos) sin recarga de servidor."""
-    components.html(HTML_FINANZAS_60FPS, height=1180, scrolling=True)
+    components.html(HTML_FINANZAS_60FPS, height=1280, scrolling=True)
