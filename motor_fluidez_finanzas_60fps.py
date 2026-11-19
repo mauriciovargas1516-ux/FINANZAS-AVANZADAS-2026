@@ -688,6 +688,32 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 
 <script>
 const NS = "http://www.w3.org/2000/svg";
+
+function drawAxesPizarra(svg, x0, yTop, xRight, yBot, yTitle, xTitle) {
+  el("line", { x1: x0, y1: yBot, x2: xRight + 6, y2: yBot, stroke: "#0F172A", "stroke-width": "1.8", "marker-end": "url(#arr-dark)" }, svg);
+  el("line", { x1: x0, y1: yBot, x2: x0, y2: yTop - 6, stroke: "#0F172A", "stroke-width": "1.8", "marker-end": "url(#arr-dark)" }, svg);
+  if (yTitle) {
+    const ty = el("text", { x: x0 + 8, y: yTop - 7, fill: "#0F172A", "font-size": "11", "font-weight": "800", "text-anchor": "start" }, svg);
+    ty.textContent = yTitle;
+  }
+  if (xTitle) {
+    const tx = el("text", { x: xRight + 4, y: yBot + 36, fill: "#0F172A", "font-size": "11", "font-weight": "800", "text-anchor": "end" }, svg);
+    tx.textContent = xTitle;
+  }
+}
+function drawPill(svg, x, y, text, color, bg="rgba(255,255,255,0.95)", anchor="middle", fs="10.8") {
+  const bw = Math.max(26, text.length * 6.3 + 10);
+  const rx = anchor === "middle" ? x - bw / 2 : (anchor === "start" ? x - 4 : x - bw + 4);
+  el("rect", { x: rx, y: y - 11.5, width: bw, height: 16.5, rx: 4, fill: bg, stroke: color, "stroke-width": "1.1" }, svg);
+  const t = el("text", { x, y: y + 0.5, fill: color, "font-size": fs, "font-weight": "800", "text-anchor": anchor }, svg);
+  t.textContent = text;
+}
+function drawAxisBreakX(svg, xPos, yBot) {
+  el("rect", { x: xPos - 5, y: yBot - 5, width: 10, height: 10, fill: "#FFFFFF" }, svg);
+  el("line", { x1: xPos - 4, y1: yBot + 5, x2: xPos, y2: yBot - 5, stroke: "#0F172A", "stroke-width": "1.5" }, svg);
+  el("line", { x1: xPos + 1, y1: yBot + 5, x2: xPos + 5, y2: yBot - 5, stroke: "#0F172A", "stroke-width": "1.5" }, svg);
+}
+
 function renderPedBox(id, lectura, paradoja, defensa) {
   const box = document.getElementById(id);
   if (!box) return;
@@ -853,8 +879,7 @@ function drawFisher() {
     const tx = el("text", { x: sx(xv), y: H - M.b + 16, fill: "#475569", "font-size": "11", "text-anchor": "middle" }, svg);
     tx.textContent = "$" + fmtInt(xv) + "M";
   }
-  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.6" }, svg);
-  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.6" }, svg);
+  drawAxesPizarra(svg, M.l, M.t, W - M.r, H - M.b, "Consumo Futuro (C1)", "Consumo Presente (C0)");
 
   // Fantasma recta de mercado si cambió
   if (Math.abs(cur.w0 - gho.w0) > 1.5 || Math.abs(cur.rf - gho.rf) > 0.005) {
@@ -894,9 +919,17 @@ function drawFisher() {
   const pNearLeft = sx(cur.c0p) < 230;
   const tP = el("text", { x: pNearLeft ? sx(cur.c0p) + 12 : sx(cur.c0p) - 10, y: pNearLeft ? sy(cur.c1p) - 8 : sy(cur.c1p) - 10, fill: "#1E3A8A", "font-size": "11.5", "font-weight": "800", "text-anchor": pNearLeft ? "start" : "end" }, svg);
   tP.textContent = "P* (Óptimo Productivo)";
+  // Proyecciones y rótulos de pizarra: Y0, W0*, C0*, C1* y nombres de curvas
+  el("line", { x1: M.l, y1: sy(cur.c1c), x2: sx(cur.c0c), y2: sy(cur.c1c), stroke: "#059669", "stroke-dasharray": "4,3" }, svg);
+  el("line", { x1: sx(cur.c0c), y1: sy(cur.c1c), x2: sx(cur.c0c), y2: H - M.b, stroke: "#059669", "stroke-dasharray": "4,3" }, svg);
+  el("circle", { cx: sx(y0), cy: H - M.b, r: 4.5, fill: "#1D4ED8" }, svg);
+  drawPill(svg, sx(y0), H - M.b + 28, `Y0 ($${fmtInt(y0)}M)`, "#1D4ED8", "#EFF6FF", "middle", "9.8");
+  el("circle", { cx: sx(cur.w0), cy: H - M.b, r: 4.5, fill: "#DC2626" }, svg);
+  drawPill(svg, sx(cur.w0), H - M.b + 28, `W0* ($${fmtDec(cur.w0,0)}M)`, "#DC2626", "#FEF2F2", "middle", "9.8");
+  drawPill(svg, sx(y0 * 0.55), sy(a * Math.sqrt(y0 * 0.45)) + 16, "Frontera Productiva", "#1D4ED8", "#EFF6FF", "middle", "10");
+  drawPill(svg, sx(cur.w0 * 0.78), sy(cur.w1 * 0.22) - 18, `LMC · pend. −${fmtDec(1+cur.rf,2)}`, "#DC2626", "#FEF2F2", "middle", "10");
   el("circle", { cx: sx(cur.c0c), cy: sy(cur.c1c), r: 7.5, fill: "#059669", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
-  const tC = el("text", { x: sx(cur.c0c) + 10, y: sy(cur.c1c) - 8, fill: "#065F46", "font-size": "11.5", "font-weight": "800", "text-anchor": "start" }, svg);
-  tC.textContent = "C* (Óptimo Consumo)";
+  drawPill(svg, sx(cur.c0c) + 12, sy(cur.c1c) - 12, `C* (Óptimo Consumo)`, "#065F46", "#ECFDF5", "start", "10.8");
 
   renderPedBox("ped-fisher",
     `La firma invierte <b>I<sub>0</sub>* = $${fmtDec(cur.i0,1)}M</b> creando un <b>VAN de +$${fmtDec(cur.van,1)}M</b> y expandiendo la riqueza presente a <b>W<sub>0</sub>* = $${fmtDec(cur.w0,1)}M</b>. Con impaciencia α = ${fmtDec(al,2)}, el accionista ${cur.prestamo > 0.5 ? `pide prestado $${fmtDec(cur.prestamo,1)}M en t=0` : (cur.prestamo < -0.5 ? `presta $${fmtDec(Math.abs(cur.prestamo),1)}M en t=0` : "consume exactamente el flujo productivo")}.`,
@@ -967,8 +1000,7 @@ function drawRiesgo() {
     const tx = el("text", { x: sx(xv), y: H - M.b + 16, fill: "#475569", "font-size": "11", "text-anchor": "middle" }, svg);
     tx.textContent = "$" + fmtInt(xv) + "M";
   }
-  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.6" }, svg);
-  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.6" }, svg);
+  drawAxesPizarra(svg, M.l, M.t, W - M.r, H - M.b, "Utilidad U(W)", "Riqueza (W)");
 
   const uPts = [];
   for (let k = 1; k <= 90; k++) {
@@ -992,10 +1024,18 @@ function drawRiesgo() {
   el("circle", { cx: sx(ec), cy: sy(eu), r: 7, fill: "#15803D", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
   el("circle", { cx: sx(ew), cy: sy(eu), r: 6.5, fill: "#DC2626", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
   el("circle", { cx: sx(ew), cy: sy(uEw), r: 6, fill: "#1D4ED8", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
-  const tEc = el("text", { x: sx(ec) - 8, y: sy(eu) - 10, fill: "#15803D", "font-size": "11.5", "font-weight": "800", "text-anchor": "end" }, svg);
-  tEc.textContent = `EC = $${fmtDec(ec, 1)}M`;
-  const tEw = el("text", { x: sx(ew) + 8, y: sy(uEw) - 8, fill: "#1E3A8A", "font-size": "11.5", "font-weight": "800", "text-anchor": "start" }, svg);
-  tEw.textContent = `U(E[W])`;
+  // Proyecciones estilo pizarra hacia ejes (W1, W2, EC, E[W], E[U(W)], U(E[W]))
+  el("line", { x1: M.l, y1: sy(eu), x2: sx(ew), y2: sy(eu), stroke: "#15803D", "stroke-dasharray": "4,3" }, svg);
+  el("line", { x1: M.l, y1: sy(uEw), x2: sx(ew), y2: sy(uEw), stroke: "#1D4ED8", "stroke-dasharray": "4,3" }, svg);
+  const tEUy = el("text", { x: M.l - 6, y: sy(eu) + 4, fill: "#15803D", "font-size": "10", "font-weight": "800", "text-anchor": "end" }, svg);
+  tEUy.textContent = "E[U(W)]";
+  const tUEy = el("text", { x: M.l - 6, y: Math.abs(sy(uEw) - sy(eu)) < 13 ? sy(eu) - 10 : sy(uEw) + 4, fill: "#1D4ED8", "font-size": "10", "font-weight": "800", "text-anchor": "end" }, svg);
+  tUEy.textContent = "U(E[W])";
+  drawPill(svg, sx(w1), sy(u1) - 15, `W1 ($${w1}M)`, "#0F172A", "#FFFFFF", "middle", "10");
+  drawPill(svg, sx(w2) - 8, sy(u2) - 15, `W2 ($${w2}M)`, "#0F172A", "#FFFFFF", "end", "10");
+  drawPill(svg, sx(maxX * 0.94), sy(fnU(maxX * 0.94)) + 16, "Curva U(W)", "#1D4ED8", "#EFF6FF", "end", "10.3");
+  drawPill(svg, sx(ec) - 8, sy(eu) - 14, `EC = $${fmtDec(ec, 1)}M`, "#15803D", "#F0FDF4", "end", "10.5");
+  drawPill(svg, sx(ew) + 10, sy(uEw) - 12, `U(E[W])`, "#1E3A8A", "#EFF6FF", "start", "10.5");
 
   renderPedBox("ped-riesgo",
     `Frente a un valor esperado de <b>$${fmtDec(ew,1)}M</b>, este individuo (${actLbl}) valora la lotería igual que <b>$${fmtDec(ec,1)}M seguros</b> (Equivalente Cierto). Su Prima por Riesgo es <b>${pi >= 0 ? "+" : "-"}$${fmtDec(Math.abs(pi),1)}M</b> y su decisión racional frente a W<sub>0</sub> = $${w0}M es: <b>${dec}</b>.`,
@@ -1100,8 +1140,7 @@ function drawMarkowitz() {
     const tx = el("text", { x: sx(sv), y: H - M.b + 16, fill: "#475569", "font-size": "10.5", "text-anchor": "middle" }, svg);
     tx.textContent = fmtDec(sv * 100, 0) + "%";
   }
-  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
-  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  drawAxesPizarra(svg, M.l, M.t, W - M.r, H - M.b, "Retorno E(Rp)", "Riesgo Total (σp)");
 
   // Fantasma frontera anterior
   if (Math.abs(rho - ghostMk.rho) > 0.02) {
@@ -1120,8 +1159,11 @@ function drawMarkowitz() {
   el("circle", { cx: sx(bestG.sd), cy: sy(bestG.er), r: 6.5, fill: "#15803D", stroke: "#FFF", "stroke-width": "1.8" }, svg);
   el("circle", { cx: sx(bestT.sd), cy: sy(bestT.er), r: 7.5, fill: "#DC2626", stroke: "#FFF", "stroke-width": "2" }, svg);
   el("circle", { cx: sx(curP.sd), cy: sy(curP.er), r: 6.5, fill: "#0F172A", stroke: "#FFF", "stroke-width": "1.8" }, svg);
-  const tTan = el("text", { x: sx(bestT.sd) + 9, y: sy(bestT.er) - 6, fill: "#DC2626", "font-size": "11", "font-weight": "800" }, svg);
-  tTan.textContent = "Tangente (CML)";
+  drawPill(svg, M.l + 18, sy(rf), `Rf ${fmtDec(rf*100,1)}%`, "#B45309", "#FEF3C7", "start", "9.8");
+  drawPill(svg, sx(bestG.sd) - 10, sy(bestG.er) + 16, "GMVP", "#15803D", "#F0FDF4", "end", "10");
+  drawPill(svg, sx(bestT.sd) + 10, sy(bestT.er) - 12, "Tangente (CML)", "#DC2626", "#FEF2F2", "start", "10.3");
+  drawPill(svg, sx(sB) - 6, sy(rB) - 14, "B (VAPORES)", "#1E3A8A", "#EFF6FF", "end", "9.6");
+  drawPill(svg, sx(sA) + 8, sy(rA) + 14, "A (CHILE)", "#1E3A8A", "#EFF6FF", "start", "9.6");
 
   // Derecha: Línea SML / CAPM (Dupla 13 IPSA)
   const bxL = 595, bxR = 955, byT = 36, byB = 344;
@@ -1129,10 +1171,15 @@ function drawMarkowitz() {
   const srY = r => byB - (r / 24) * (byB - byT);
   const tSml = el("text", { x: (bxL + bxR) / 2, y: 22, fill: "#0F172A", "font-size": "12", "font-weight": "700", "text-anchor": "middle" }, svg);
   tSml.textContent = "Línea SML / CAPM (Dupla 13 IPSA)";
-  el("line", { x1: bxL, y1: byB, x2: bxR, y2: byB, stroke: "#334155", "stroke-width": "1.5" }, svg);
-  el("line", { x1: bxL, y1: byT, x2: bxL, y2: byB, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  drawAxesPizarra(svg, bxL, byT, bxR, byB, "E(Ri) %", "Beta (β)");
+  el("line", { x1: sbX(1.0), y1: byT, x2: sbX(1.0), y2: byB, stroke: "#CBD5E1", "stroke-dasharray": "4,3" }, svg);
+  const tB1 = el("text", { x: sbX(1.0), y: byB + 15, fill: "#475569", "font-size": "10", "font-weight": "700", "text-anchor": "middle" }, svg);
+  tB1.textContent = "β=1,0";
   const rmRef = 15.8, rfPct = rf * 100;
   el("line", { x1: sbX(0), y1: srY(rfPct), x2: sbX(1.55), y2: srY(rfPct + 1.55 * (rmRef - rfPct)), stroke: "#1D4ED8", "stroke-width": "2.6" }, svg);
+  drawPill(svg, sbX(0.32), srY(21.5), "α > 0 (Subvalorada)", "#15803D", "#F0FDF4", "start", "9.6");
+  drawPill(svg, sbX(1.48), srY(7.0), "α < 0 (Sobrevalorada)", "#DC2626", "#FEF2F2", "end", "9.6");
+  drawPill(svg, sbX(1.48), srY(rfPct + 1.48 * (rmRef - rfPct)) - 14, "SML", "#1D4ED8", "#EFF6FF", "end", "10");
   DUPLA13_SML.forEach(ac => {
     const rReq = rfPct + ac.b * (rmRef - rfPct);
     const subVal = ac.r >= rReq;
@@ -1230,8 +1277,7 @@ function drawHamada() {
     const tx = el("text", { x: sx(d), y: H - M.b + 16, fill: "#475569", "font-size": "10.5", "text-anchor": "middle" }, svg);
     tx.textContent = d + "%";
   }
-  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
-  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  drawAxesPizarra(svg, M.l, M.t, W - M.r, H - M.b, "Tasa / Costo (%)", "Apalancamiento Deuda/Valor (B/V)");
 
   const pKe = [], pWa = [];
   for (let d = 0; d <= 75; d += 2) {
@@ -1246,10 +1292,10 @@ function drawHamada() {
   el("circle", { cx: sx(dvPct), cy: sy(c.ke * 100), r: 6, fill: "#DC2626", stroke: "#FFF", "stroke-width": "1.5" }, svg);
   el("circle", { cx: sx(dvPct), cy: sy(c.wacc * 100), r: 6.5, fill: "#1D4ED8", stroke: "#FFF", "stroke-width": "1.8" }, svg);
 
-  const lKe = el("text", { x: sx(dvPct) + 8, y: sy(c.ke * 100) - 4, fill: "#DC2626", "font-size": "10.8", "font-weight": "800" }, svg);
-  lKe.textContent = `Ke ${fmtDec(c.ke*100,1)}%`;
-  const lWa = el("text", { x: sx(dvPct) + 8, y: sy(c.wacc * 100) + 14, fill: "#1D4ED8", "font-size": "10.8", "font-weight": "800" }, svg);
-  lWa.textContent = `WACC ${fmtDec(c.wacc*100,1)}%`;
+  drawPill(svg, sx(0) + 18, sy(c.ku * 100) - 12, `Ku ${fmtDec(c.ku*100,1)}%`, "#0F172A", "#FFFFFF", "start", "9.8");
+  drawPill(svg, sx(dvPct) + 10, sy(c.ke * 100) - 8, `Ke ${fmtDec(c.ke*100,1)}%`, "#DC2626", "#FEF2F2", "start", "10.3");
+  drawPill(svg, sx(dvPct) + 10, sy(c.wacc * 100) + 14, `WACC ${fmtDec(c.wacc*100,1)}%`, "#1D4ED8", "#EFF6FF", "start", "10.3");
+  drawPill(svg, sx(72), sy(c.kdt * 100) - 10, `Kd(1−t) ${fmtDec(c.kdt*100,1)}%`, "#0F766E", "#F0FDFA", "end", "9.8");
 
   // Derecha: Puente Modigliani-Miller / APV
   const bx0 = 640, bw = 72, baseB = 315;
@@ -1314,12 +1360,21 @@ function drawVanTir() {
 
   const svg = document.getElementById("svg-vantir");
   svg.innerHTML = "";
-  const M = { l: 60, r: 30, t: 22, b: 38 }, W = 980, H = 285;
+  addDefs(svg);
+  const M = { l: 64, r: 34, t: 26, b: 44 }, W = 980, H = 285;
   const sx = rp => M.l + (rp / 32) * (W - M.l - M.r);
   const sy = v => H - M.b - ((v + 40) / 160) * (H - M.t - M.b);
 
-  el("line", { x1: M.l, y1: sy(0), x2: W - M.r, y2: sy(0), stroke: "#334155", "stroke-width": "1.6" }, svg);
-  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  for (const yv of [-40, 0, 40, 80, 120]) {
+    el("line", { x1: M.l, y1: sy(yv), x2: W - M.r, y2: sy(yv), stroke: yv === 0 ? "#0F172A" : "#E2E8F0", "stroke-width": yv === 0 ? "1.6" : "1" }, svg);
+    const ty = el("text", { x: M.l - 7, y: sy(yv) + 4, fill: "#475569", "font-size": "10.5", "text-anchor": "end" }, svg);
+    ty.textContent = `$${yv}M`;
+  }
+  for (let rp = 0; rp <= 30; rp += 5) {
+    const tx = el("text", { x: sx(rp), y: H - M.b + 16, fill: "#475569", "font-size": "10.5", "text-anchor": "middle" }, svg);
+    tx.textContent = rp + "%";
+  }
+  drawAxesPizarra(svg, M.l, M.t, W - M.r, H - M.b, "VAN ($MM)", "Tasa de Descuento r (%)");
   const ptsA = [], ptsB = [];
   for (let rp = 0; rp <= 32; rp += 0.5) {
     ptsA.push(`${sx(rp).toFixed(1)},${sy(npvArr(flA, rp / 100)).toFixed(1)}`);
@@ -1327,10 +1382,19 @@ function drawVanTir() {
   }
   el("polyline", { points: ptsA.join(" "), fill: "none", stroke: "#1D4ED8", "stroke-width": "3" }, svg);
   el("polyline", { points: ptsB.join(" "), fill: "none", stroke: "#EA580C", "stroke-width": "3" }, svg);
+  drawPill(svg, sx(3), sy(npvArr(flA, 0.03)) - 12, "Perfil VAN (A)", "#1D4ED8", "#EFF6FF", "start", "10");
+  drawPill(svg, sx(3), sy(npvArr(flB, 0.03)) + 16, "Perfil VAN (B)", "#EA580C", "#FFF7ED", "start", "10");
+  if (tA > 0 && tA < 32) {
+    el("circle", { cx: sx(tA), cy: sy(0), r: 5, fill: "#1D4ED8", stroke: "#FFF", "stroke-width": "1.5" }, svg);
+    drawPill(svg, sx(tA), sy(0) + 17, `TIR A (${fmtDec(tA,1)}%)`, "#1D4ED8", "#EFF6FF", "middle", "9.6");
+  }
+  if (tB > 0 && tB < 32) {
+    el("circle", { cx: sx(tB), cy: sy(0), r: 5, fill: "#EA580C", stroke: "#FFF", "stroke-width": "1.5" }, svg);
+    drawPill(svg, sx(tB), sy(0) - 14, `TIR B (${fmtDec(tB,1)}%)`, "#EA580C", "#FFF7ED", "middle", "9.6");
+  }
   if (rFisher > 0 && rFisher < 32) {
     el("line", { x1: sx(rFisher), y1: M.t, x2: sx(rFisher), y2: H - M.b, stroke: "#7C3AED", "stroke-width": "1.8", "stroke-dasharray": "5,3" }, svg);
-    const tf = el("text", { x: sx(rFisher) + 5, y: M.t + 14, fill: "#6D28D9", "font-size": "11", "font-weight": "800" }, svg);
-    tf.textContent = `Tasa Fisher r* = ${fmtDec(rFisher, 1)}%`;
+    drawPill(svg, sx(rFisher), M.t + 12, `Tasa Fisher r* = ${fmtDec(rFisher, 1)}%`, "#6D28D9", "#FAF5FF", "middle", "10");
   }
   el("line", { x1: sx(rPct), y1: M.t, x2: sx(rPct), y2: H - M.b, stroke: "#0F172A", "stroke-dasharray": "3,3" }, svg);
   el("circle", { cx: sx(rPct), cy: sy(vA), r: 6.5, fill: "#1D4ED8", stroke: "#FFF", "stroke-width": "1.8" }, svg);
