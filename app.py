@@ -501,7 +501,7 @@ def _render_vista_evaluador_corporativo(solo_pizarra=False):
                 """
             <div class="ulagos-clean-banner">
                 <div>
-                    <b style="font-size:14.5px;">EVALUADOR CORPORATIVO DE ACTIVOS REALES (FCL · FCI · MONTE CARLO · LIBRO1.XLSX)</b>
+                    <b style="font-size:14.5px;">Evaluación de Activos Reales — Flujo de Caja Libre, Inversionista y Monte Carlo</b>
                     <div style="font-size:12px; color:#CBD5E1; margin-top:2px;">Finanzas Avanzadas ULagos — Prof.ª Camila Bustos Rosas | Exportación Excel de 7 hojas con fórmulas nativas vivas</div>
                 </div>
             </div>
@@ -513,7 +513,7 @@ def _render_vista_evaluador_corporativo(solo_pizarra=False):
             """
         <div class="ulagos-clean-banner">
             <div>
-                <b style="font-size:14.5px;">PIZARRA INTERACTIVA PASO A PASO (CONSTRUYE EL FCL / FCI CELDA POR CELDA)</b>
+                <b style="font-size:14.5px;">Taller Práctico — Construcción Paso a Paso de Flujos de Caja (FCL y FCI)</b>
                 <div style="font-size:12px; color:#CBD5E1; margin-top:2px;">Selecciona el caso en la barra lateral izquierda y practica los 6 pasos con detector automático de errores de signo, IVA y descuento.</div>
             </div>
         </div>
@@ -1938,7 +1938,7 @@ def main():
         st.markdown("---")
 
         opciones_nav = [
-            "1. Estudio Fluido 60 FPS, Hoja Mecánica y Mapa Teórico",
+            "1. Modelos Interactivos, Formulario y Guías",
             "2. Biblioteca y Visor PDF (Drive 5 TB)",
         ]
         if not st.session_state.modo_catedra_fin:
@@ -1960,7 +1960,7 @@ def main():
             "Modo Presentación Cátedra",
             value=st.session_state.modo_catedra_fin,
             key="toggle_modo_catedra_fin",
-            help="Deja visibles únicamente el Estudio 60 FPS y la Biblioteca Oficial.",
+            help="Muestra únicamente el módulo principal de cátedra y la biblioteca oficial.",
         )
         if _nuevo_modo != st.session_state.modo_catedra_fin:
             st.session_state.modo_catedra_fin = _nuevo_modo
@@ -1973,9 +1973,9 @@ def main():
     if vista_activa.startswith("1."):
         st.markdown(
             """
-            <div style="background-color:#0F172A;color:#FFFFFF;padding:12px 20px;border-radius:8px;margin-bottom:10px;">
-                <div style="font-size:15.5px;font-weight:700;">ESTUDIO INTERACTIVO A 60 FPS — FINANZAS AVANZADAS (ULAGOS 2026)</div>
-                <div style="font-size:12px;color:#CBD5E1;margin-top:2px;">8 módulos sin lag: Separación de Fisher, Riesgo y Juego Justo, Markowitz (252d) y CAPM, Hamada/WACC/APV, VAN vs. TIR + PGU DuPont, Hoja Mecánica, Mapa Teórico + Lectura Viva y Guías Oficiales Resueltas.</div>
+            <div style="background-color:#0F172A;color:#FFFFFF;padding:14px 20px;border-radius:8px;margin-bottom:10px;border-left:4px solid #3B82F6;">
+                <div style="font-size:17px;font-weight:700;letter-spacing:0.2px;">Finanzas Avanzadas</div>
+                <div style="font-size:12.5px;color:#CBD5E1;margin-top:3px;">Ingeniería Comercial · Universidad de Los Lagos · 2026 &nbsp;|&nbsp; Prof.ª Camila Bustos Rosas</div>
             </div>
             """,
             unsafe_allow_html=True,
