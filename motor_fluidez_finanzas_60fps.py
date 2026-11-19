@@ -223,7 +223,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <button class="tab-btn" onclick="openTab('vantir', this)">5. VAN vs. TIR y PGU DuPont</button>
     <button class="tab-btn" onclick="openTab('mecanica', this)">6. Hoja Mecánica (Modo Ciego)</button>
     <button class="tab-btn" onclick="openTab('lectura', this)">7. Mapa Teórico y Lectura Viva</button>
-    <button class="tab-btn" onclick="openTab('guias', this)">8. Guías Oficiales Resueltas (60 FPS)</button>
+    <button class="tab-btn" onclick="openTab('guias', this)">8. Guías Oficiales Resueltas</button>
   </div>
 
   <!-- ====================================================================== -->
@@ -231,7 +231,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-fisher" class="panel active">
     <div class="sec-title">
-      <span>MODELO CONSUMO-INVERSIÓN Y SEPARACIÓN DE FISHER A 60 FPS (RMgI = rf · TMS = −(1 + rf))</span>
+      <span>Modelo Consumo-Inversión y Principio de Separación de Fisher (RMgI = rf · TMS = −(1 + rf))</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="animarFisher()">Reproducir Baja de Tasa (rf: 20% → 6%)</button>
         <button class="act-btn" onclick="presetFisher(0.30)">Accionista Ahorrador (α=0,30)</button>
@@ -251,7 +251,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <div class="sliders-grid">
       <div class="sl-card"><div class="sl-head"><span>Dotación Inicial Y0 ($MM)</span><span id="fs-y0-v" class="sl-val">$120M</span></div><input id="fs-y0" type="range" min="60" max="260" step="5" value="120" oninput="drawFisher()" /></div>
       <div class="sl-card"><div class="sl-head"><span>Tasa Mercado rf (%)</span><span><span id="fs-rf-v" class="sl-val">10,0%</span><span id="fs-rf-d" class="sl-delta d-eq"></span></span></div><input id="fs-rf" type="range" min="2.0" max="24.0" step="0.5" value="10.0" oninput="drawFisher()" /></div>
-      <div class="sl-card"><div class="sl-head"><span>Productividad Activos (A)</span><span id="fs-a-v" class="sl-val">28</span></div><input id="fs-a" type="range" min="16" max="42" step="1" value="28" oninput="drawFisher()" /></div>
+      <div class="sl-card"><div class="sl-head"><span>Productividad Activos (A)</span><span id="fs-a-v" class="sl-val">20</span></div><input id="fs-a" type="range" min="14" max="36" step="1" value="20" oninput="drawFisher()" /></div>
       <div class="sl-card"><div class="sl-head"><span>Impaciencia Consumo α</span><span id="fs-al-v" class="sl-val">0,45</span></div><input id="fs-al" type="range" min="0.20" max="0.85" step="0.05" value="0.45" oninput="drawFisher()" /></div>
     </div>
 
@@ -271,7 +271,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-riesgo" class="panel">
     <div class="sec-title">
-      <span>ACTITUDES FRENTE AL RIESGO, JUEGO JUSTO Y PRIMA POR RIESGO (VON NEUMANN-MORGENSTERN A 60 FPS)</span>
+      <span>Actitudes frente al Riesgo, Juego Justo y Prima por Riesgo (Von Neumann-Morgenstern)</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="presetRiesgo(0.35)">Averso (U'' &lt; 0)</button>
         <button class="act-btn" onclick="presetRiesgo(1.00)">Neutral (U'' = 0)</button>
@@ -311,7 +311,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-markowitz" class="panel">
     <div class="sec-title">
-      <span>FRONTERA EFICIENTE DE MARKOWITZ (252 DÍAS), DIVERSIFICACIÓN (ρ &lt; 1), CML Y CAPM / SML A 60 FPS</span>
+      <span>Frontera Eficiente de Markowitz (252 días), Diversificación (ρ &lt; 1), CML y CAPM / SML</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="animarMarkowitz()">Reproducir Diversificación (ρ: +1 → −0,6)</button>
         <button class="act-btn" onclick="presetMarkowitz(1.0)">ρ = +1 (Sin Diversif.)</button>
@@ -352,7 +352,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-hamada" class="panel">
     <div class="sec-title">
-      <span>ESTRUCTURA DE CAPITAL A 60 FPS: ECUACIÓN DE HAMADA (βL), WACC, ESCUDO FISCAL Y APV</span>
+      <span>Estructura de Capital: Ecuación de Hamada (βL), WACC, Escudo Fiscal y Método APV</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="animarHamada()">Reproducir Apalancamiento (B/V: 0% → 65%)</button>
         <button class="act-btn" onclick="presetHamada(30)">Caso Cátedra (30% Deuda)</button>
@@ -393,7 +393,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-vantir" class="panel">
     <div class="sec-title">
-      <span>CONFLICTO VAN VS. TIR EN PROYECTOS MUTUAMENTE EXCLUYENTES (TASA DE FISHER A 60 FPS — EJ. 3 Y 4 GUÍA)</span>
+      <span>Conflicto VAN vs. TIR en Proyectos Mutuamente Excluyentes (Tasa de Fisher — Ejercicios 3 y 4)</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="presetVanTir(14)">Tasa 14% (Conflicto: Gana A)</button>
         <button class="act-btn" onclick="presetVanTir(21)">Tasa 21% (Post-Fisher: Gana B)</button>
@@ -416,7 +416,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <div class="svg-box"><svg id="svg-vantir" viewBox="0 0 980 285"></svg></div>
 
     <div class="sec-title" style="margin-top:12px;">
-      <span>PODER GENERADOR DE UTILIDADES (PGU / IDENTIDAD DUPONT — ROSS, WESTERFIELD &amp; JORDAN CAP. 3)</span>
+      <span>Poder Generador de Utilidades (PGU / Identidad DuPont — Ross, Westerfield y Jordan, Cap. 3)</span>
       <div class="btn-bar">
         <button class="act-btn" onclick="presetPGU(24, 0.7)">Estrategia Diferenciación (Alto Margen)</button>
         <button class="act-btn primary" onclick="presetPGU(6, 2.8)">Estrategia Supermercado (Alta Rotación)</button>
@@ -434,7 +434,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-mecanica" class="panel">
     <div class="sec-title">
-      <span>HOJA DE ENTRENAMIENTO MECÁNICO — FINANZAS AVANZADAS (ULAGOS 2026)</span>
+      <span>Formulario y Entrenamiento Mecánico — Finanzas Avanzadas (ULagos 2026)</span>
       <div class="btn-bar">
         <button id="btn-modo-copia" class="act-btn primary" onclick="setModoMec(false)">Modo Copia (Todo Visible)</button>
         <button id="btn-modo-ciego" class="act-btn" onclick="setModoMec(true)">Modo Ciego (Autoevaluación)</button>
@@ -461,7 +461,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <div id="mec-container">
       <div class="mec-grid" id="mec-formulas-grid"></div>
       <div class="sec-title" style="margin-top:6px;">
-        <span>ESQUELETOS DE GRÁFICAS PARA COPIAR A MANO EN CUADERNO (6 DIAGRAMAS CLAVE DE EXAMEN)</span>
+        <span>Esqueletos de Gráficos Clave para Repaso en Cuaderno (6 diagramas)</span>
         <span style="font-size:11px;font-weight:600;color:#334155;">En Modo Ciego, haz clic en cada gráfico para revelar las etiquetas</span>
       </div>
       <div class="skel-grid" id="mec-skel-grid"></div>
@@ -473,7 +473,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-lectura" class="panel">
     <div class="sec-title">
-      <span>MAPA CAUSAL INTEGRADO DE FINANZAS AVANZADAS (5 PILARES): DEL CONSUMO-INVERSIÓN AL FLUJO CORPORATIVO</span>
+      <span>Mapa Conceptual Integrado — Finanzas Avanzadas (Conexión entre los 5 Pilares del Curso)</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="activarEscenarioFin('wacc')">Cadena A: De Markowitz/CAPM a WACC</button>
         <button class="act-btn" onclick="activarEscenarioFin('deuda')">Cadena B: Apalancamiento (Hamada → FCI)</button>
@@ -486,7 +486,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <div id="mapa-fin-detail" class="map-detail-card"></div>
 
     <div class="sec-title" style="margin-top:14px;">
-      <span>LECTURA GUIADA EN 3 CAPAS POR BIBLIOGRAFÍA OFICIAL (CAMILA BUSTOS · BREALEY · ROSS)</span>
+      <span>Síntesis Teórica en 3 Capas por Bibliografía Oficial (Prof.ª Camila Bustos · Brealey · Ross)</span>
       <div class="btn-bar">
         <button id="cap-btn-core" class="act-btn primary" onclick="setCapaFin('core')">Capa 1: Idea Central</button>
         <button id="cap-btn-bridge" class="act-btn" onclick="setCapaFin('bridge')">Capa 2: Puentes entre Pilares</button>
@@ -507,7 +507,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <div class="lec-grid" id="lec-fin-grid"></div>
 
     <div class="sec-title" style="margin-top:14px;">
-      <span>ENTRENADOR DE CONTROL DE LECTURA CRUZADO (14 PREGUNTAS QUE RELACIONAN TEORÍA Y GUÍAS)</span>
+      <span>Control de Lectura y Aplicación Cruzada (14 preguntas integradas)</span>
       <div class="btn-bar">
         <span id="qz-fin-score" class="pill-score">Aciertos: 0 / 14</span>
         <button class="act-btn" onclick="toggleSoloErradasFin(this)">Ver Solo Pendientes / Erradas</button>
@@ -522,7 +522,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   <!-- ====================================================================== -->
   <div id="panel-guias" class="panel">
     <div class="sec-title">
-      <span>GUÍA 2 CPA — TEORÍA DE LA CARTERA (EJERCICIOS 1 AL 6) Y GUÍA FLUJOS DE CAJA (EMPRESA XX Y PLANTA PILOTO)</span>
+      <span>Guías Oficiales Resueltas — Teoría de la Cartera (CPA) y Flujos de Caja bajo Incertidumbre</span>
       <div class="btn-bar">
         <button class="act-btn primary" onclick="selGuiaBloque('ej1', this)">Ej. 1: Normal (68-95-99,7%)</button>
         <button class="act-btn" onclick="selGuiaBloque('ej2', this)">Ej. 2–3: 4 Estados + Cartera</button>
@@ -727,7 +727,7 @@ function jumpToTab(name) {
 // ============================================================================
 // 1. SEPARACIÓN DE FISHER (60 FPS)
 // ============================================================================
-let ghostFs = { y0: 120, rf: 10.0, a: 28, al: 0.45 };
+let ghostFs = { y0: 120, rf: 10.0, a: 20, al: 0.45 };
 let animFsId = null;
 
 function solveFisher(y0, rfPct, A, al) {
@@ -850,7 +850,8 @@ function drawFisher() {
   }
 
   el("circle", { cx: sx(cur.c0p), cy: sy(cur.c1p), r: 7, fill: "#1D4ED8", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
-  const tP = el("text", { x: sx(cur.c0p) - 10, y: sy(cur.c1p) - 10, fill: "#1E3A8A", "font-size": "11.5", "font-weight": "800", "text-anchor": "end" }, svg);
+  const pNearLeft = sx(cur.c0p) < 230;
+  const tP = el("text", { x: pNearLeft ? sx(cur.c0p) + 12 : sx(cur.c0p) - 10, y: pNearLeft ? sy(cur.c1p) - 8 : sy(cur.c1p) - 10, fill: "#1E3A8A", "font-size": "11.5", "font-weight": "800", "text-anchor": pNearLeft ? "start" : "end" }, svg);
   tP.textContent = "P* (Óptimo Productivo)";
   el("circle", { cx: sx(cur.c0c), cy: sy(cur.c1c), r: 7.5, fill: "#059669", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
   const tC = el("text", { x: sx(cur.c0c) + 10, y: sy(cur.c1c) - 8, fill: "#065F46", "font-size": "11.5", "font-weight": "800", "text-anchor": "start" }, svg);
