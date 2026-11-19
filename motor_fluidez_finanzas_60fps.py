@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-motor_fluidez_finanzas_60fps.py — ESTUDIO FINANCIERO INTEGRAL A 60 FPS (7 MÓDULOS + LECTURA VIVA + HOJA MECÁNICA)
+motor_fluidez_finanzas_60fps.py — ESTUDIO FINANCIERO INTEGRAL A 60 FPS (8 MÓDULOS + GUÍAS RESUELTAS + LECTURA VIVA)
 Asignatura: Finanzas Avanzadas — Universidad de Los Lagos (Prof.ª Camila Bustos Rosas)
 Renderiza en el navegador (HTML5 SVG + JavaScript sin recarga de servidor):
   1) Separación de Fisher: Frontera Productiva, Línea del Mercado de Capitales (RMgI = rf) y Consumo (TMS).
@@ -190,6 +190,12 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   .qz-btn.sel { background: #0F172A; color: #FFFFFF; border-color: #0F172A; }
   .qz-fb { font-size: 11.5px; color: #1E293B; margin-top: 7px; line-height: 1.42; display: none; border-top: 1px dashed #CBD5E1; padding-top: 6px; }
   .qz-card.answered .qz-fb { display: block; }
+  .g-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 7px 0; }
+  .g-tbl th { background: #1E293B; color: #FFFFFF; padding: 5px 7px; border: 1px solid #CBD5E1; text-align: center; font-weight: 700; }
+  .g-tbl td { padding: 5px 7px; border: 1px solid #CBD5E1; text-align: right; font-family: Consolas, monospace; color: #0F172A; }
+  .g-tbl td:first-child { text-align: left; font-family: inherit; font-weight: 700; background: #F8FAFC; }
+  .g-subgrid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 11px; align-items: start; }
+  @media (max-width: 840px) { .g-subgrid { grid-template-columns: 1fr; } }
 
   @media print {
     body { background: #FFFFFF !important; }
@@ -217,6 +223,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     <button class="tab-btn" onclick="openTab('vantir', this)">5. VAN vs. TIR y PGU DuPont</button>
     <button class="tab-btn" onclick="openTab('mecanica', this)">6. Hoja Mecánica (Modo Ciego)</button>
     <button class="tab-btn" onclick="openTab('lectura', this)">7. Mapa Teórico y Lectura Viva</button>
+    <button class="tab-btn" onclick="openTab('guias', this)">8. Guías Oficiales Resueltas (60 FPS)</button>
   </div>
 
   <!-- ====================================================================== -->
@@ -440,13 +447,13 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div style="font-size:12px;color:#334155;">
         <b>Método de cuaderno:</b> copia las 16 fórmulas y los 6 esqueletos; luego activa <b>Modo Ciego</b>, escríbelos de memoria y haz clic en cada tarjeta para comprobar y marcar <b>✓</b>.
       </div>
-      <span id="mec-score" class="pill-score">Dominadas: 0 / 16</span>
+      <span id="mec-score" class="pill-score">Dominadas: 0 / 18</span>
     </div>
 
     <div class="mec-filters">
-      <button class="flt-btn active" onclick="filtrarMec('all', this)">Todas (16)</button>
+      <button class="flt-btn active" onclick="filtrarMec('all', this)">Todas (18)</button>
       <button class="flt-btn" onclick="filtrarMec('fsh', this)">I. Fisher, Riesgo y PGU (4)</button>
-      <button class="flt-btn" onclick="filtrarMec('mk', this)">II. Markowitz y CAPM (4)</button>
+      <button class="flt-btn" onclick="filtrarMec('mk', this)">II. Markowitz, Estadística y CAPM (6)</button>
       <button class="flt-btn" onclick="filtrarMec('cap', this)">III. Hamada, WACC y APV (4)</button>
       <button class="flt-btn" onclick="filtrarMec('flj', this)">IV. Flujos FCL / FCI y Criterios (4)</button>
     </div>
@@ -489,25 +496,170 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     </div>
 
     <div class="mec-filters">
-      <button class="flt-btn active" onclick="filtrarLecturaFin('all', this)">Toda la Bibliografía (6)</button>
+      <button class="flt-btn active" onclick="filtrarLecturaFin('all', this)">Toda la Bibliografía (8)</button>
       <button class="flt-btn" onclick="filtrarLecturaFin('F1', this)">F1: Fisher (1)</button>
       <button class="flt-btn" onclick="filtrarLecturaFin('F2', this)">F2: Riesgo / PGU (1)</button>
-      <button class="flt-btn" onclick="filtrarLecturaFin('F3', this)">F3: Markowitz / CAPM (1)</button>
+      <button class="flt-btn" onclick="filtrarLecturaFin('F3', this)">F3: Markowitz / Estadística (2)</button>
       <button class="flt-btn" onclick="filtrarLecturaFin('F4', this)">F4: Hamada / WACC / APV (1)</button>
-      <button class="flt-btn" onclick="filtrarLecturaFin('F5', this)">F5: FCL / FCI / Guía Ej. 1–8 (2)</button>
+      <button class="flt-btn" onclick="filtrarLecturaFin('F5', this)">F5: FCL / FCI / Guías (3)</button>
     </div>
 
     <div class="lec-grid" id="lec-fin-grid"></div>
 
     <div class="sec-title" style="margin-top:14px;">
-      <span>ENTRENADOR DE CONTROL DE LECTURA CRUZADO (10 PREGUNTAS QUE RELACIONAN LOS 5 PILARES)</span>
+      <span>ENTRENADOR DE CONTROL DE LECTURA CRUZADO (14 PREGUNTAS QUE RELACIONAN TEORÍA Y GUÍAS)</span>
       <div class="btn-bar">
-        <span id="qz-fin-score" class="pill-score">Aciertos: 0 / 10</span>
+        <span id="qz-fin-score" class="pill-score">Aciertos: 0 / 14</span>
         <button class="act-btn" onclick="toggleSoloErradasFin(this)">Ver Solo Pendientes / Erradas</button>
         <button class="act-btn" onclick="resetQuizFin()">Reiniciar Control</button>
       </div>
     </div>
     <div id="qz-fin-list"></div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- PANEL 8: GUÍAS OFICIALES RESUELTAS A 60 FPS (CPA CARTERA + FLUJOS XX)  -->
+  <!-- ====================================================================== -->
+  <div id="panel-guias" class="panel">
+    <div class="sec-title">
+      <span>GUÍA 2 CPA — TEORÍA DE LA CARTERA (EJERCICIOS 1 AL 6) Y GUÍA FLUJOS DE CAJA (EMPRESA XX Y PLANTA PILOTO)</span>
+      <div class="btn-bar">
+        <button class="act-btn primary" onclick="selGuiaBloque('ej1', this)">Ej. 1: Normal (68-95-99,7%)</button>
+        <button class="act-btn" onclick="selGuiaBloque('ej2', this)">Ej. 2–3: 4 Estados + Cartera</button>
+        <button class="act-btn" onclick="selGuiaBloque('ej4', this)">Ej. 4: Probabilidades X e Y</button>
+        <button class="act-btn" onclick="selGuiaBloque('ej56', this)">Ej. 5–6: MSFT y Home Depot (12m)</button>
+        <button class="act-btn" onclick="selGuiaBloque('ejxx', this)">Guía Flujos: Empresa XX + Planta ±6%</button>
+      </div>
+    </div>
+
+    <!-- BLOQUE EJ 1: DISTRIBUCIÓN NORMAL -->
+    <div id="gb-ej1" class="gb-sec">
+      <details class="enun-box" open>
+        <summary>
+          <span>Guía 2 CPA — Ejercicio 1 (Distribución Normal y Regla Empírica de Rentabilidad Histórica 50 Años)</span>
+          <span class="enun-badge">Fórmula: [μ − k·σ , μ + k·σ]</span>
+        </summary>
+        <div class="enun-body" id="g1-enun"></div>
+      </details>
+      <div class="sliders-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="sl-card"><div class="sl-head"><span>Rentabilidad Promedio Anual μ (%)</span><span id="g1-mu-v" class="sl-val">14,3%</span></div><input id="g1-mu" type="range" min="2.0" max="30.0" step="0.1" value="14.3" oninput="drawGuiaEj1()" /></div>
+        <div class="sl-card"><div class="sl-head"><span>Desviación Estándar Anual σ (%)</span><span id="g1-sd-v" class="sl-val">24,5%</span></div><input id="g1-sd" type="range" min="5.0" max="45.0" step="0.1" value="24.5" oninput="drawGuiaEj1()" /></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">Rango ±1σ (68,26%)</div><div id="g1-k1" class="kpi-val">[-10,2% ; 38,8%]</div><div class="kpi-sub">μ ± 1·σ</div></div>
+        <div class="kpi" style="border-left-color:#059669;"><div class="kpi-lbl">Rango ±2σ (95,44%)</div><div id="g1-k2" class="kpi-val">[-34,7% ; 63,3%]</div><div class="kpi-sub">μ ± 2·σ</div></div>
+        <div class="kpi" style="border-left-color:#EA580C;"><div class="kpi-lbl">Rango ±3σ (99,74%)</div><div id="g1-k3" class="kpi-val">[-59,2% ; 87,8%]</div><div class="kpi-sub">μ ± 3·σ</div></div>
+      </div>
+      <div class="svg-box"><svg id="svg-g1-gauss" viewBox="0 0 980 320"></svg></div>
+    </div>
+
+    <!-- BLOQUE EJ 2 Y 3: 4 ESTADOS EQUIPROBABLES + CARTERA 30/70 + RENDIMIENTO SIMPLE -->
+    <div id="gb-ej2" class="gb-sec" style="display:none;">
+      <details class="enun-box" open>
+        <summary>
+          <span>Guía 2 CPA — Ejercicio 2 (4 Estados Económicos Equiprobables + Cartera 30% A / 70% B) y Ejercicio 3</span>
+          <span class="enun-badge">p = 0,25 cada estado · Var(p) = wA²σA² + wB²σB² + 2wAwB·Cov</span>
+        </summary>
+        <div class="enun-body">
+          Estados equiprobables (25% c/u): <b>Depresión</b> (A: -20%, B: 5%), <b>Recesión</b> (A: 10%, B: 20%), <b>Normalidad</b> (A: 30%, B: -12%) y <b>Prosperidad</b> (A: 50%, B: 9%).
+          Mueve el peso <b>w<sub>A</sub></b> (por defecto <b>30% A / 70% B</b>) para ver cómo cambia el riesgo y el retorno de la cartera gracias a la correlación negativa (<b>ρ = -0,1639</b>).
+        </div>
+      </details>
+      <div class="sliders-grid" style="grid-template-columns: 1.5fr 1fr 1fr;">
+        <div class="sl-card">
+          <div class="sl-head"><span>Peso Activo A (wA) / B (wB = 1 − wA)</span><span id="g2-wa-v" class="sl-val">30% A / 70% B</span></div>
+          <input id="g2-wa" type="range" min="0" max="100" step="1" value="30" oninput="drawGuiaEj2()" />
+          <div class="btn-bar" style="margin-top:6px;">
+            <button class="act-btn primary" onclick="setG2Peso(30)">Caso Guía (30% A / 70% B)</button>
+            <button class="act-btn" onclick="setG2Peso(21)">Mínima Varianza (21% A)</button>
+          </div>
+        </div>
+        <div class="sl-card"><div class="sl-head"><span>Ej. 3 — Inversión Inicial ($)</span><span id="g3-i0-v" class="sl-val">$600</span></div><input id="g3-i0" type="range" min="100" max="2000" step="50" value="600" oninput="drawGuiaEj2()" /></div>
+        <div class="sl-card"><div class="sl-head"><span>Ej. 3 — Ingreso Efectivo Año 1 ($)</span><span id="g3-f1-v" class="sl-val">$1.400</span></div><input id="g3-f1" type="range" min="200" max="3000" step="50" value="1400" oninput="drawGuiaEj2()" /></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">Activo A (Esperado / σ)</div><div class="kpi-val">17,50% | 25,86%</div><div class="kpi-sub">Var(A) = 0,066875</div></div>
+        <div class="kpi" style="border-left-color:#059669;"><div class="kpi-lbl">Activo B (Esperado / σ)</div><div class="kpi-val">5,50% | 11,50%</div><div class="kpi-sub">Var(B) = 0,013225</div></div>
+        <div class="kpi" style="border-left-color:#7C3AED;"><div class="kpi-lbl">Covarianza y Correlación</div><div class="kpi-val">ρ = −0,1639</div><div class="kpi-sub">Cov(A,B) = −0,004875</div></div>
+        <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">Cartera Activa (Rp / σp)</div><div id="g2-k-p" class="kpi-val">9,10% | 10,22%</div><div id="g2-k-vp" class="kpi-sub">Var(p) = 0,010451</div></div>
+      </div>
+      <div class="g-subgrid">
+        <div id="g2-tbl-box"></div>
+        <div class="svg-box"><svg id="svg-g2-port" viewBox="0 0 460 280"></svg></div>
+      </div>
+      <div id="g2-sol" class="sol-box"></div>
+    </div>
+
+    <!-- BLOQUE EJ 4: DISTRIBUCIÓN DE PROBABILIDADES ACCIÓN X E Y -->
+    <div id="gb-ej4" class="gb-sec" style="display:none;">
+      <details class="enun-box" open>
+        <summary>
+          <span>Guía 2 CPA — Ejercicio 4 (Distribución de Probabilidades Acción X e Acción Y)</span>
+          <span class="enun-badge">E(R) = ∑ pi·Ri · Cov = ∑ pi·(Rx − E[Rx])(Ry − E[Ry])</span>
+        </summary>
+        <div class="enun-body">
+          Distribución discreta de 5 escenarios con probabilidades <b>p = [0,1 ; 0,3 ; 0,3 ; 0,2 ; 0,1]</b>. Observa que la correlación resultante es casi nula (<b>ρ = +0,0034</b>), lo que evidencia independencia lineal casi total entre X e Y (ideal para diversificación).
+        </div>
+      </details>
+      <div class="kpis">
+        <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">a. Rendimientos Esperados</div><div class="kpi-val">Rx=4,80% | Ry=3,30%</div><div class="kpi-sub">∑ pi · Ri</div></div>
+        <div class="kpi" style="border-left-color:#059669;"><div class="kpi-lbl">b. Varianzas y Desviación</div><div class="kpi-val">σX=7,60% | σY=6,12%</div><div class="kpi-sub">VarX=0,005776 | VarY=0,003741</div></div>
+        <div class="kpi" style="border-left-color:#7C3AED;"><div class="kpi-lbl">c. Covarianza Cov(X,Y)</div><div class="kpi-val">+0,000016</div><div class="kpi-sub">Casi cero (0,0016%²)</div></div>
+        <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">d. Correlación ρ(X,Y)</div><div class="kpi-val">+0,0034</div><div class="kpi-sub">Activos casi incorrelacionados</div></div>
+      </div>
+      <div id="g4-tbl-box"></div>
+      <div class="sol-box">
+        <b>Desarrollo exacto:</b> E(R<sub>X</sub>) = 0,1(−10%)+0,3(0%)+0,3(6%)+0,2(10%)+0,1(20%) = <b>4,80%</b> | E(R<sub>Y</sub>) = 0,1(4%)+0,3(8%)+0,3(0%)+0,2(−5%)+0,1(15%) = <b>3,30%</b>.<br/>
+        <b>Cov(X,Y)</b> = +0,000016 &nbsp;⇒&nbsp; <b>ρ(X,Y)</b> = 0,000016 / (0,07600 × 0,06116) = <b>+0,0034</b> (al ser cercano a 0, combinar X e Y reduce drásticamente el riesgo de cartera).
+      </div>
+    </div>
+
+    <!-- BLOQUE EJ 5 Y 6: SERIES 12 MESES MSFT Y HOME DEPOT VS S&P 500 -->
+    <div id="gb-ej56" class="gb-sec" style="display:none;">
+      <div class="mec-filters" style="margin-bottom:8px;">
+        <button id="g56-btn-msft" class="flt-btn active" onclick="setCaso56('msft')">Ejercicio 5: Microsoft (MSFT) vs. S&amp;P 500 (12 meses)</button>
+        <button id="g56-btn-hd" class="flt-btn" onclick="setCaso56('hd')">Ejercicio 6: Home Depot (HD) vs. S&amp;P 500 (1995, 12 meses)</button>
+        <button id="g56-btn-mues" class="flt-btn active" onclick="setDdof56(1)">Convención Muestral (n − 1 = 11)</button>
+        <button id="g56-btn-pob" class="flt-btn" onclick="setDdof56(0)">Convención Poblacional (n = 12)</button>
+      </div>
+      <div class="kpis">
+        <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">a. Promedio Mensual (M / Acción)</div><div id="g56-k-med" class="kpi-val">-0,09% | 3,76%</div><div class="kpi-sub">Media aritmética 12 meses</div></div>
+        <div class="kpi" style="border-left-color:#059669;"><div class="kpi-lbl">b. Varianza y σ Mensual</div><div id="g56-k-var" class="kpi-val">σM=3,06% | σA=7,24%</div><div id="g56-k-var2" class="kpi-sub">Var_M | Var_Acción</div></div>
+        <div class="kpi" style="border-left-color:#7C3AED;"><div class="kpi-lbl">c. Covarianza Cov(M, Acción)</div><div id="g56-k-cov" class="kpi-val">+0,001270</div><div id="g56-k-div" class="kpi-sub">Divisor n−1 = 11</div></div>
+        <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">d. Correlación ρ y Beta (β)</div><div id="g56-k-rho" class="kpi-val">ρ=0,573 | β=1,35</div><div class="kpi-sub">β = Cov(i,M) / Var(M)</div></div>
+      </div>
+      <div class="g-subgrid">
+        <div id="g56-tbl-box"></div>
+        <div class="svg-box"><svg id="svg-g56-scat" viewBox="0 0 470 330"></svg></div>
+      </div>
+      <div id="g56-sol" class="sol-box"></div>
+    </div>
+
+    <!-- BLOQUE GUÍA FLUJOS: EJ 1 EMPRESA XX + EJ 2 PLANTA PILOTO ULAGOS ±6% -->
+    <div id="gb-ejxx" class="gb-sec" style="display:none;">
+      <details class="enun-box" open>
+        <summary>
+          <span>Guía Flujos de Caja — Ej. 1 (Empresa XX Farmacéutico Probabilístico) y Ej. 2 (Planta Piloto ULagos $130M)</span>
+          <span class="enun-badge">Tasa Ajustada por Riesgo: k = Rf + Prima = 8% + 2% = 10%</span>
+        </summary>
+        <div class="enun-body" id="gxx-enun"></div>
+      </details>
+      <div class="sliders-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="sl-card"><div class="sl-head"><span>Inversión Inicial I0 ($)</span><span id="gxx-i0-v" class="sl-val">$1.000.000</span></div><input id="gxx-i0" type="range" min="600000" max="1500000" step="25000" value="1000000" oninput="drawGuiaXX()" /></div>
+        <div class="sl-card"><div class="sl-head"><span>Tasa Libre de Riesgo Rf (%)</span><span id="gxx-rf-v" class="sl-val">8,0%</span></div><input id="gxx-rf" type="range" min="2.0" max="14.0" step="0.5" value="8.0" oninput="drawGuiaXX()" /></div>
+        <div class="sl-card"><div class="sl-head"><span>Ajuste por Riesgo / Prima (%)</span><span id="gxx-pr-v" class="sl-val">2,0%</span></div><input id="gxx-pr" type="range" min="0.0" max="12.0" step="0.5" value="2.0" oninput="drawGuiaXX()" /></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">Flujos Esperados E(F1, F2, F3)</div><div class="kpi-val">$400k | $700k | $300k</div><div class="kpi-sub">∑ pi · Fi (guion '-' = $0)</div></div>
+        <div class="kpi" style="border-left-color:#15803D;"><div class="kpi-lbl">VAN del Proyecto (a k = Rf+Prima)</div><div id="gxx-k-van" class="kpi-val">+$167.543</div><div id="gxx-k-k" class="kpi-sub">Tasa k = 10,0%</div></div>
+        <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">TIR del Proyecto</div><div id="gxx-k-tir" class="kpi-val">19,55%</div><div id="gxx-k-dec" class="kpi-sub">ACEPTAR (TIR &gt; k)</div></div>
+      </div>
+      <div class="svg-box"><svg id="svg-gxx" viewBox="0 0 980 265"></svg></div>
+      <div id="gxx-sol" class="sol-box"></div>
+      <div class="sol-box" style="border-left-color:#1D4ED8;">
+        <b>Guía Flujos de Caja — Ejercicio 2 (Planta Piloto ULagos $130M):</b> Para resolver automáticamente los 5 incisos completos (FCL, Tabla Amortización 7,5% a 5 años, FCI, <b>Sensibilidad +6% ingresos</b> y <b>VAN Esperado 55% original / 45% ingreso −6%</b>), abre la <b>Vista 3 (Evaluador Corporativo)</b> en el menú lateral, selecciona <b>Caso 2 — Guía P2 (130M)</b> y revisa la <b>Hoja5 (Sensibilidad)</b> donde ya viene calibrado el preset exacto <b>±6% y 55% / 45%</b>.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -561,6 +713,7 @@ function openTab(name, btn) {
   if (name === "vantir") drawVanTir();
   if (name === "mecanica") renderMecanica();
   if (name === "lectura") { drawMapaFin(); renderLecturaFin(); renderQuizFin(); }
+  if (name === "guias") { drawGuiaEj1(); drawGuiaEj2(); renderGuiaEj4(); drawGuia56(); drawGuiaXX(); }
 }
 function jumpToTab(name) {
   const btns = Array.from(document.querySelectorAll(".top-tabs .tab-btn"));
@@ -1155,6 +1308,12 @@ const FORMULAS_FIN = [
   { id: 8, cat: "mk", tag: "CAPM", title: "8. CAPM, Beta y Línea SML",
     eq: `R<sub>e</sub> = R<sub>f</sub> + β<sub>i</sub>(R<sub>m</sub> − R<sub>f</sub>) &nbsp;|&nbsp; β<sub>i</sub> = <span class="frac"><span class="num">Cov(R<sub>i</sub>, R<sub>m</sub>)</span><span class="den">Var(R<sub>m</sub>)</span></span>`,
     rule: "Solo se remunera el riesgo sistemático (β). El riesgo no sistemático se elimina diversificando (5 → 30 títulos IPSA)." },
+  { id: 17, cat: "mk", tag: "Normal", title: "17. Distribución Normal (Regla Empírica 68-95-99,7%)",
+    eq: `68,26%: μ ± 1σ &nbsp;|&nbsp; 95,44%: μ ± 2σ &nbsp;|&nbsp; 99,74%: μ ± 3σ`,
+    rule: "Guía 2 CPA Ej. 1 (μ=14,3%, σ=24,5%): ±1σ [-10,2%; 38,8%], ±2σ [-34,7%; 63,3%], ±3σ [-59,2%; 87,8%]." },
+  { id: 18, cat: "mk", tag: "Estadística", title: "18. Covarianza y Correlación (Ex-Ante vs. Histórica)",
+    eq: `Cov = ∑ p<sub>s</sub>(R<sub>A,s</sub>−R̄<sub>A</sub>)(R<sub>B,s</sub>−R̄<sub>B</sub>) &nbsp;|&nbsp; ρ = <span class="frac"><span class="num">Cov(A,B)</span><span class="den">σ<sub>A</sub>·σ<sub>B</sub></span></span>`,
+    rule: "Con probabilidades (Ej. 2 y 4) se pondera por p_s; en series históricas (Ej. 5 MSFT y Ej. 6 HD) se divide por n−1 (muestral) o n (poblacional). ρ siempre ∈ [−1, +1]." },
 
   { id: 9, cat: "cap", tag: "Hamada", title: "9. Ecuación de Hamada (βU ↔ βL)",
     eq: `β<sub>L</sub> = β<sub>U</sub> [1 + (1 − t)<span class="frac"><span class="num">B</span><span class="den">S</span></span>] &nbsp;|&nbsp; β<sub>U</sub> = <span class="frac"><span class="num">β<sub>L</sub></span><span class="den">1 + (1 − t)(B/S)</span></span>`,
@@ -1492,6 +1651,20 @@ const FICHAS_FIN = [
     core: "<b>Idea central:</b> Un flujo limpio exige: (1) valores netos de IVA, (2) consistencia de signos, (3) reverso positivo de depreciación y amortización bajo el BDI, (4) exclusión total de costos hundidos (ej. estudio de viabilidad previo de $800k en Ej. 8), (5) correcto tratamiento de venta de activos usados con Valor Libro, y (6) descuento dividiendo por (1 + r)<sup>t</sup>.",
     bridge: "<b>Puente entre pilares:</b> Todo error de flujo arruina el VAN aunque el CAPM y WACC (F3–F4) estén impecablemente calculados.",
     trap: "<b>Trampas de prueba (Ej. 7 y 8):</b> (1) Multiplicar por (1+r)<sup>t</sup> en vez de dividir al actualizar flujos (infló el VAN del asesor de $9M a $67,5M). (2) Olvidar reversar el Valor Libro (+VL) después de impuestos cuando se vende una máquina usada. (3) Depreciar terrenos o Capital de Trabajo."
+  },
+  {
+    unit: "F3", src: "Guía de Ejercicios 2 — Teoría de la Cartera (CPA · Ejercicios 1 al 6)",
+    title: "7. Estadística de Carteras: Distribución Normal, Covarianza, Correlación y Beta Histórico",
+    core: "<b>Idea central:</b> La rentabilidad esperada y el riesgo se miden de dos formas: <b>Ex-Ante</b> (ponderando estados económicos por su probabilidad p<sub>s</sub>, Ej. 2 y 4) y <b>Ex-Post</b> (promediando retornos históricos observados como MSFT y Home Depot vs. S&amp;P 500, Ej. 5 y 6). Bajo normalidad, 68,26%, 95,44% y 99,74% de los retornos caen en μ ± 1σ, 2σ y 3σ.",
+    bridge: "<b>Puente entre pilares:</b> La covarianza con el mercado dividida por la varianza del mercado (Cov(i,M)/Var(M)) es exactamente el <b>Beta (β)</b> que alimenta al CAPM (F3) y Hamada (F4).",
+    trap: "<b>Trampas de prueba (Guía 2 CPA):</b> (1) En series históricas (12 meses) usar divisor muestral (n−1 = 11) para varianza y covarianza —aunque <b>ρ y β dan idéntico</b> con n−1 o n porque el divisor se cancela. (2) Confundir rendimiento simple (F<sub>1</sub>−I<sub>0</sub>)/I<sub>0</sub> = 133,33% (Ej. 3) con razón F<sub>1</sub>/I<sub>0</sub> = 233,33%."
+  },
+  {
+    unit: "F5", src: "Guía Flujos de Caja — Empresa XX (Ej. 1) y Planta Piloto ULagos $130M (Ej. 2)",
+    title: "8. Flujos Esperados bajo Incertidumbre, Tasa Ajustada por Riesgo y Sensibilidad ±6%",
+    core: "<b>Idea central:</b> Cuando los flujos futuros son aleatorios (Ej. 1 Empresa XX), primero se obtiene el flujo esperado de cada año E(F<sub>t</sub>) = ∑ p<sub>i</sub>·F<sub>i</sub> y se descuenta a la <b>tasa ajustada por riesgo</b> k = R<sub>f</sub> + Prima (8% + 2% = 10%). En proyectos complejos (Planta Piloto $130M), se evalúa el impacto de variaciones porcentuales en ingresos (+6%) y el VAN esperado ponderado por probabilidades (55% Base / 45% Escenario −6%).",
+    bridge: "<b>Puente entre pilares:</b> Une el cálculo de valor esperado de F2 con el motor FCL/FCI y Monte Carlo de F5.",
+    trap: "<b>Trampas de prueba (Guía Flujos):</b> (1) En la tabla del Ej. 1, el guion '−' significa flujo $0 (nunca se omite su probabilidad; las probabilidades de cada periodo deben sumar 1,00). (2) En Planta Piloto ULagos ($130M), las pruebas de producción ($6M) y las ventas ($190M) vienen en <b>Bruto</b> (dividir por 1,19), mientras la máquina ($130M), egresos ($60,4M), capacitación ($7M) y CT ($35M) ya están en <b>Neto</b>."
   }
 ];
 
@@ -1593,6 +1766,34 @@ const QUIZ_FIN_DATA = [
     opts: ["Se suma +$2.500.000 y se resta −$2.000.000 antes de impuestos (tributa 15% solo sobre la ganancia de $500.000), y luego se reversa +$2.000.000 debajo del BDI", "Se suma +$2.500.000 directamente después de impuestos sin considerar el Valor Libro", "El Valor Libro se resta antes de impuestos y no se reversa porque es pérdida de efectivo"],
     ans: 0,
     why: "La utilidad tributable por venta de activo es Precio de Venta − Valor Libro ($500.000 → impuesto $75.000). Como el Valor Libro no es salida de caja, se reversa (+$2.000.000) después de impuestos, dejando un ingreso neto de caja de $2.425.000."
+  },
+  {
+    tag: "F3 Guía 2 CPA",
+    q: "Si la rentabilidad media histórica de un mercado accionario es μ = 14,3% y su desviación estándar es σ = 24,5% (distribución normal), ¿entre qué valores se ubica el 68,26% de las rentabilidades anuales?",
+    opts: ["Entre 0,0% y 38,8%", "Entre −10,2% y +38,8% (μ ± 1σ)", "Entre −34,7% y +63,3% (μ ± 2σ)"],
+    ans: 1,
+    why: "Por la regla empírica de la distribución normal, el 68,26% corresponde a μ ± 1σ: 14,3% − 24,5% = −10,2% y 14,3% + 24,5% = +38,8% (Guía 2 CPA, Ej. 1)."
+  },
+  {
+    tag: "F3 Guía 2 CPA",
+    q: "En el Ejercicio 2 (4 estados equiprobables), los activos A (σ=25,86%) y B (σ=11,50%) tienen correlación ρ = −0,1639. Al formar una cartera 30% A y 70% B, su desviación estándar es σp = 10,22%. ¿Por qué el riesgo de la cartera es MENOR incluso que el del activo B por sí solo?",
+    opts: ["Porque el término de covarianza 2·wA·wB·Cov(A,B) es negativo y compensa parte de la varianza individual (efecto diversificación)", "Porque el promedio ponderado simple de 25,86% y 11,50% es 10,22%", "Porque al ser estados equiprobables la varianza se divide por 4 dos veces"],
+    ans: 0,
+    why: "Cuando ρ < 0 (como −0,1639), los activos tienden a moverse en direcciones opuestas entre estados económicos, logrando una volatilidad de cartera (10,22%) inferior incluso al activo menos riesgoso individual (B = 11,50%)."
+  },
+  {
+    tag: "F3 Guía 2 CPA",
+    q: "Al calcular la correlación (ρ) y el Beta (β = Cov/Var_M) de Microsoft o Home Depot frente al S&P 500 usando 12 retornos mensuales, ¿cambia el resultado de ρ o β si usas divisor muestral (n−1=11) vs. poblacional (n=12)?",
+    opts: ["Sí, el Beta cambia en un 9,1% según el divisor usado", "No cambian ni ρ ni β, porque el factor (n−1) o (n) aparece tanto en el numerador como en el denominador y se cancela exactamente", "Solo cambia la correlación ρ, pero la varianza se mantiene igual"],
+    ans: 1,
+    why: "La varianza y la covarianza sí cambian de escala entre n−1 y n, pero en ρ = Cov/(σi·σM) y en β = Cov(i,M)/Var(M) el divisor se simplifica algebraicamente dando exactamente el mismo valor (MSFT: ρ=0,5730, β=1,3534)."
+  },
+  {
+    tag: "F5 Guía Flujos",
+    q: "En el Ejercicio 1 de la Guía de Flujos (Empresa XX, I0 = $1.000.000, flujos esperados $400k, $700k y $300k), se descuenta con una tasa ajustada por riesgo k = 8% + 2% = 10%, obteniendo VAN = +$167.543 y TIR = 19,55%. ¿Qué significa este resultado?",
+    opts: ["Rechazar porque la suma nominal de flujos ($1.400k) apenas supera la inversión", "Aceptar el proyecto: los flujos esperados cubren el 8% libre de riesgo, el 2% de prima por riesgo y generan $167.543 de riqueza neta hoy", "Descontar nuevamente al 8% libre de riesgo para duplicar la prima"],
+    ans: 1,
+    why: "Como VAN(10%) = +$167.543 > 0 y TIR = 19,55% > k = 10%, el proyecto compensa sobradamente el riesgo exigido y crea valor económico para la empresa."
   }
 ];
 
@@ -1626,8 +1827,305 @@ drawHamada();
 drawVanTir();
 renderMecanica();
 drawMapaFin();
+
+// ============================================================================
+// 8. GUÍAS OFICIALES RESUELTAS A 60 FPS (GUÍA 2 CPA + GUÍA FLUJOS DE CAJA)
+// ============================================================================
+function selGuiaBloque(key, btn) {
+  document.querySelectorAll(".gb-sec").forEach(d => d.style.display = "none");
+  const target = document.getElementById("gb-" + key);
+  if (target) target.style.display = "block";
+  btn.parentElement.querySelectorAll(".act-btn").forEach(b => b.classList.remove("primary"));
+  btn.classList.add("primary");
+  if (key === "ej1") drawGuiaEj1();
+  if (key === "ej2") drawGuiaEj2();
+  if (key === "ej4") renderGuiaEj4();
+  if (key === "ej56") drawGuia56();
+  if (key === "ejxx") drawGuiaXX();
+}
+
+// --- Ej. 1: Campana Normal SVG (68,26% / 95,44% / 99,74%) ---
+function drawGuiaEj1() {
+  const mu = +document.getElementById("g1-mu").value;
+  const sd = +document.getElementById("g1-sd").value;
+  document.getElementById("g1-mu-v").textContent = fmtDec(mu, 1) + "%";
+  document.getElementById("g1-sd-v").textContent = fmtDec(sd, 1) + "%";
+
+  const r1a = mu - sd, r1b = mu + sd;
+  const r2a = mu - 2 * sd, r2b = mu + 2 * sd;
+  const r3a = mu - 3 * sd, r3b = mu + 3 * sd;
+
+  document.getElementById("g1-enun").innerHTML =
+    `La rentabilidad promedio anual histórica (50 años) es <b>μ = ${fmtDec(mu,1)}%</b> con desviación estándar <b>σ = ${fmtDec(sd,1)}%</b>. ` +
+    `Bajo distribución normal: <b>68,26%</b> cae en <b>[${fmtDec(r1a,1)}% ; ${fmtDec(r1b,1)}%]</b>, ` +
+    `<b>95,44%</b> en <b>[${fmtDec(r2a,1)}% ; ${fmtDec(r2b,1)}%]</b> y <b>99,74%</b> en <b>[${fmtDec(r3a,1)}% ; ${fmtDec(r3b,1)}%]</b>.`;
+
+  document.getElementById("g1-k1").textContent = `[${fmtDec(r1a, 1)}% ; ${fmtDec(r1b, 1)}%]`;
+  document.getElementById("g1-k2").textContent = `[${fmtDec(r2a, 1)}% ; ${fmtDec(r2b, 1)}%]`;
+  document.getElementById("g1-k3").textContent = `[${fmtDec(r3a, 1)}% ; ${fmtDec(r3b, 1)}%]`;
+
+  const svg = document.getElementById("svg-g1-gauss");
+  if (!svg) return;
+  svg.innerHTML = "";
+  const M = { l: 44, r: 44, t: 26, b: 48 }, W = 980, H = 320;
+  const sx = z => M.l + ((z + 3.6) / 7.2) * (W - M.l - M.r);
+  const pdf = z => Math.exp(-0.5 * z * z);
+  const sy = p => H - M.b - p * (H - M.t - M.b);
+
+  const areaBand = (za, zb, col) => {
+    const pts = [`${sx(za).toFixed(1)},${sy(0).toFixed(1)}`];
+    for (let k = 0; k <= 40; k++) {
+      const z = za + (zb - za) * (k / 40);
+      pts.push(`${sx(z).toFixed(1)},${sy(pdf(z)).toFixed(1)}`);
+    }
+    pts.push(`${sx(zb).toFixed(1)},${sy(0).toFixed(1)}`);
+    el("polygon", { points: pts.join(" "), fill: col }, svg);
+  };
+  areaBand(-3, 3, "rgba(234,88,12,0.16)");
+  areaBand(-2, 2, "rgba(5,150,105,0.20)");
+  areaBand(-1, 1, "rgba(29,78,216,0.28)");
+
+  const curvePts = [];
+  for (let k = 0; k <= 120; k++) {
+    const z = -3.6 + 7.2 * (k / 120);
+    curvePts.push(`${sx(z).toFixed(1)},${sy(pdf(z)).toFixed(1)}`);
+  }
+  el("polyline", { points: curvePts.join(" "), fill: "none", stroke: "#0F172A", "stroke-width": "2.6" }, svg);
+  el("line", { x1: M.l, y1: sy(0), x2: W - M.r, y2: sy(0), stroke: "#334155", "stroke-width": "1.6" }, svg);
+
+  for (const z of [-3, -2, -1, 0, 1, 2, 3]) {
+    const val = mu + z * sd;
+    el("line", { x1: sx(z), y1: sy(0), x2: sx(z), y2: sy(pdf(z)), stroke: z === 0 ? "#0F172A" : "#64748B", "stroke-dasharray": z === 0 ? "" : "4,3" }, svg);
+    const t1 = el("text", { x: sx(z), y: sy(0) + 17, fill: "#0F172A", "font-size": "11", "font-weight": "800", "text-anchor": "middle" }, svg);
+    t1.textContent = fmtDec(val, 1) + "%";
+    const t2 = el("text", { x: sx(z), y: sy(0) + 32, fill: "#475569", "font-size": "10", "font-weight": "700", "text-anchor": "middle" }, svg);
+    t2.textContent = z === 0 ? "μ" : (z > 0 ? `+${z}σ` : `${z}σ`);
+  }
+  const tMid = el("text", { x: sx(0), y: sy(0.48), fill: "#1E3A8A", "font-size": "13", "font-weight": "800", "text-anchor": "middle" }, svg);
+  tMid.textContent = "68,26% (±1σ)";
+  const t2 = el("text", { x: sx(1.5), y: sy(0.18), fill: "#065F46", "font-size": "11", "font-weight": "800", "text-anchor": "middle" }, svg);
+  t2.textContent = "95,44%";
+  const t3 = el("text", { x: sx(2.5), y: sy(0.06), fill: "#9A3412", "font-size": "10.5", "font-weight": "800", "text-anchor": "middle" }, svg);
+  t3.textContent = "99,74%";
+}
+
+// --- Ej. 2 y 3: 4 Estados Equiprobables + Cartera 30/70 + Rendimiento ---
+function setG2Peso(w) { document.getElementById("g2-wa").value = w; drawGuiaEj2(); }
+function drawGuiaEj2() {
+  const waPct = +document.getElementById("g2-wa").value, wa = waPct / 100, wb = 1 - wa;
+  const i0 = +document.getElementById("g3-i0").value, f1 = +document.getElementById("g3-f1").value;
+  document.getElementById("g2-wa-v").textContent = `${waPct}% A / ${100 - waPct}% B`;
+  document.getElementById("g3-i0-v").textContent = "$" + fmtInt(i0);
+  document.getElementById("g3-f1-v").textContent = "$" + fmtInt(f1);
+
+  const era = 0.175, erb = 0.055, va = 0.066875, vb = 0.013225, cov = -0.004875;
+  const erp = wa * era + wb * erb;
+  const vp = wa * wa * va + wb * wb * vb + 2 * wa * wb * cov;
+  const sp = Math.sqrt(Math.max(1e-9, vp));
+  const r3 = ((f1 - i0) / i0) * 100;
+
+  document.getElementById("g2-k-p").textContent = `${fmtDec(erp * 100, 2)}% | ${fmtDec(sp * 100, 2)}%`;
+  document.getElementById("g2-k-vp").textContent = `Var(p) = ${vp.toFixed(6)}`;
+
+  const states = [
+    ["Depresión", 0.25, -20, 5], ["Recesión", 0.25, 10, 20], ["Normalidad", 0.25, 30, -12], ["Prosperidad", 0.25, 50, 9]
+  ];
+  let tbl = `<table class="g-tbl"><thead><tr><th>Estado</th><th>Prob.</th><th>Rent. A</th><th>Rent. B</th><th>Cartera (${waPct}/${100-waPct})</th></tr></thead><tbody>`;
+  states.forEach(([nm, p, ra, rb]) => {
+    const rp = wa * ra + wb * rb;
+    tbl += `<tr><td>${nm}</td><td>${fmtDec(p*100,0)}%</td><td>${fmtDec(ra,1)}%</td><td>${fmtDec(rb,1)}%</td><td><b>${fmtDec(rp,2)}%</b></td></tr>`;
+  });
+  tbl += `<tr><td><b>Esperado / σ</b></td><td>100%</td><td>17,5% (25,9%)</td><td>5,5% (11,5%)</td><td><b>${fmtDec(erp*100,2)}% (${fmtDec(sp*100,2)}%)</b></td></tr></tbody></table>`;
+  document.getElementById("g2-tbl-box").innerHTML = tbl;
+
+  document.getElementById("g2-sol").innerHTML =
+    `<b>Ej. 2 (${waPct}% A / ${100-waPct}% B):</b> E(R<sub>p</sub>) = ${fmtDec(wa,2)}(17,5%)+${fmtDec(wb,2)}(5,5%) = <b>${fmtDec(erp*100,2)}%</b> | ` +
+    `Var(p) = ${fmtDec(wa,2)}²(0,066875)+${fmtDec(wb,2)}²(0,013225)+2(${fmtDec(wa,2)})(${fmtDec(wb,2)})(−0,004875) = <b>${vp.toFixed(6)}</b> ⇒ σ<sub>p</sub> = <b>${fmtDec(sp*100,2)}%</b><br/>` +
+    `<b>Ej. 3 (Rendimiento Simple):</b> R = ($${fmtInt(f1)} − $${fmtInt(i0)}) / $${fmtInt(i0)} = <b>${fmtDec(r3, 2)}%</b>`;
+
+  const svg = document.getElementById("svg-g2-port");
+  if (!svg) return;
+  svg.innerHTML = "";
+  const M = { l: 46, r: 22, t: 20, b: 36 }, W = 460, H = 280;
+  const sx = s => M.l + (s / 30) * (W - M.l - M.r);
+  const sy = r => H - M.b - (r / 20) * (H - M.t - M.b);
+  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  const pts = [];
+  for (let k = 0; k <= 100; k++) {
+    const w = k / 100;
+    const er = (w * era + (1 - w) * erb) * 100;
+    const sd = Math.sqrt(w * w * va + (1 - w) * (1 - w) * vb + 2 * w * (1 - w) * cov) * 100;
+    pts.push(`${sx(sd).toFixed(1)},${sy(er).toFixed(1)}`);
+  }
+  el("polyline", { points: pts.join(" "), fill: "none", stroke: "#1D4ED8", "stroke-width": "2.8" }, svg);
+  el("circle", { cx: sx(25.86), cy: sy(17.5), r: 5, fill: "#0F172A" }, svg);
+  el("circle", { cx: sx(11.50), cy: sy(5.5), r: 5, fill: "#059669" }, svg);
+  el("circle", { cx: sx(sp * 100), cy: sy(erp * 100), r: 7, fill: "#DC2626", stroke: "#FFF", "stroke-width": "2" }, svg);
+  const t1 = el("text", { x: sx(sp * 100) + 10, y: sy(erp * 100) + 4, fill: "#DC2626", "font-size": "11", "font-weight": "800" }, svg);
+  t1.textContent = `Cartera (${waPct}/${100-waPct})`;
+  const tx = el("text", { x: W - M.r, y: H - 8, fill: "#475569", "font-size": "10.5", "text-anchor": "end" }, svg);
+  tx.textContent = "Riesgo σp (%)";
+}
+
+// --- Ej. 4: Tabla Probabilidades X e Y ---
+function renderGuiaEj4() {
+  const box = document.getElementById("g4-tbl-box");
+  if (!box) return;
+  const rows = [
+    [0.1, -10, 4], [0.3, 0, 8], [0.3, 6, 0], [0.2, 10, -5], [0.1, 20, 15]
+  ];
+  const ex = 0.048, ey = 0.033;
+  let h = `<table class="g-tbl"><thead><tr><th>Escenario</th><th>Prob. (p)</th><th>Rx</th><th>Ry</th><th>p·(Rx−E[Rx])²</th><th>p·(Ry−E[Ry])²</th><th>p·(Rx−E[Rx])(Ry−E[Ry])</th></tr></thead><tbody>`;
+  rows.forEach(([p, rx, ry], i) => {
+    const dx = rx / 100 - ex, dy = ry / 100 - ey;
+    h += `<tr><td>Esc. ${i+1}</td><td>${fmtDec(p,1)}</td><td>${rx}%</td><td>${ry}%</td><td>${(p*dx*dx).toFixed(6)}</td><td>${(p*dy*dy).toFixed(6)}</td><td>${(p*dx*dy).toFixed(6)}</td></tr>`;
+  });
+  h += `<tr><td><b>Suma / Total</b></td><td><b>1,0</b></td><td><b>E=4,80%</b></td><td><b>E=3,30%</b></td><td><b>0,005776</b></td><td><b>0,003741</b></td><td><b>+0,000016</b></td></tr></tbody></table>`;
+  box.innerHTML = h;
+}
+
+// --- Ej. 5 y 6: MSFT y Home Depot (12 meses vs S&P 500) ---
+const MESES_12 = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DATA_56 = {
+  msft: {
+    lbl: "MSFT (Microsoft)",
+    m: [3.25, -3.00, -4.58, 1.16, 1.24, -2.68, 3.15, 3.76, -2.69, 2.08, -3.95, 1.23],
+    a: [5.58, -3.08, 2.73, 9.14, 16.22, -3.95, -0.24, 12.86, -3.44, 12.25, -0.20, -2.78]
+  },
+  hd: {
+    lbl: "HD (Home Depot 1995)",
+    m: [2.43, 3.61, 2.73, 2.80, 3.63, 2.13, 3.18, -0.03, 4.01, -0.50, 4.10, 1.74],
+    a: [1.63, -4.01, -1.39, -5.65, -0.30, -2.10, 7.98, -9.09, -0.31, -6.58, 19.13, 7.61]
+  }
+};
+let caso56 = "msft", ddof56 = 1;
+function setCaso56(k) {
+  caso56 = k;
+  document.getElementById("g56-btn-msft").classList.toggle("active", k === "msft");
+  document.getElementById("g56-btn-hd").classList.toggle("active", k === "hd");
+  drawGuia56();
+}
+function setDdof56(d) {
+  ddof56 = d;
+  document.getElementById("g56-btn-mues").classList.toggle("active", d === 1);
+  document.getElementById("g56-btn-pob").classList.toggle("active", d === 0);
+  drawGuia56();
+}
+function drawGuia56() {
+  const ds = DATA_56[caso56];
+  const n = 12, div = n - ddof56;
+  const rm = ds.m.map(v => v / 100), ra = ds.a.map(v => v / 100);
+  const mm = rm.reduce((s, v) => s + v, 0) / n;
+  const ma = ra.reduce((s, v) => s + v, 0) / n;
+  const vm = rm.reduce((s, v) => s + Math.pow(v - mm, 2), 0) / div;
+  const va = ra.reduce((s, v) => s + Math.pow(v - ma, 2), 0) / div;
+  const cov = rm.reduce((s, v, i) => s + (v - mm) * (ra[i] - ma), 0) / div;
+  const sm = Math.sqrt(vm), sa = Math.sqrt(va);
+  const rho = cov / (sm * sa), beta = cov / vm, alpha = ma - beta * mm;
+
+  document.getElementById("g56-k-med").textContent = `${fmtDec(mm*100,2)}% | ${fmtDec(ma*100,2)}%`;
+  document.getElementById("g56-k-var").textContent = `σM=${fmtDec(sm*100,2)}% | σA=${fmtDec(sa*100,2)}%`;
+  document.getElementById("g56-k-var2").textContent = `VarM=${vm.toFixed(6)} | VarA=${va.toFixed(6)}`;
+  document.getElementById("g56-k-cov").textContent = `${cov >= 0 ? "+" : ""}${cov.toFixed(6)}`;
+  document.getElementById("g56-k-div").textContent = ddof56 === 1 ? "Divisor muestral (n−1 = 11)" : "Divisor poblacional (n = 12)";
+  document.getElementById("g56-k-rho").textContent = `ρ=${fmtDec(rho,4)} | β=${fmtDec(beta,2)}`;
+
+  let tbl = `<table class="g-tbl"><thead><tr><th>Mes</th><th>S&amp;P 500</th><th>${ds.lbl.split(" ")[0]}</th><th>Mes</th><th>S&amp;P 500</th><th>${ds.lbl.split(" ")[0]}</th></tr></thead><tbody>`;
+  for (let i = 0; i < 6; i++) {
+    tbl += `<tr><td>${MESES_12[i]}</td><td>${fmtDec(ds.m[i],2)}%</td><td>${fmtDec(ds.a[i],2)}%</td><td>${MESES_12[i+6]}</td><td>${fmtDec(ds.m[i+6],2)}%</td><td>${fmtDec(ds.a[i+6],2)}%</td></tr>`;
+  }
+  tbl += `</tbody></table>`;
+  document.getElementById("g56-tbl-box").innerHTML = tbl;
+
+  document.getElementById("g56-sol").innerHTML =
+    `<b>${ds.lbl} (${ddof56===1 ? "Muestral n−1=11" : "Poblacional n=12"}):</b> ` +
+    `Media S&amp;P500 = <b>${fmtDec(mm*100,4)}%</b> | Media Acción = <b>${fmtDec(ma*100,4)}%</b> | ` +
+    `Var(M) = <b>${vm.toFixed(6)}</b> | Var(Acc) = <b>${va.toFixed(6)}</b> | Cov = <b>${cov.toFixed(6)}</b> | ` +
+    `<b>ρ = ${fmtDec(rho,4)}</b> | <b>β = ${fmtDec(beta,4)}</b> (idénticos bajo n−1 o n).`;
+
+  const svg = document.getElementById("svg-g56-scat");
+  if (!svg) return;
+  svg.innerHTML = "";
+  const M = { l: 48, r: 22, t: 26, b: 36 }, W = 470, H = 330;
+  const minX = -6, maxX = 6, minY = -12, maxY = 22;
+  const sx = x => M.l + ((x - minX) / (maxX - minX)) * (W - M.l - M.r);
+  const sy = y => H - M.b - ((y - minY) / (maxY - minY)) * (H - M.t - M.b);
+
+  el("line", { x1: M.l, y1: sy(0), x2: W - M.r, y2: sy(0), stroke: "#94A3B8", "stroke-dasharray": "4,3" }, svg);
+  el("line", { x1: sx(0), y1: M.t, x2: sx(0), y2: H - M.b, stroke: "#94A3B8", "stroke-dasharray": "4,3" }, svg);
+  el("line", { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+  el("line", { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, stroke: "#334155", "stroke-width": "1.5" }, svg);
+
+  // Recta característica Ri = alpha + beta * Rm
+  const yL = (alpha + beta * (minX / 100)) * 100, yR = (alpha + beta * (maxX / 100)) * 100;
+  el("line", { x1: sx(minX), y1: sy(Math.max(minY, Math.min(maxY, yL))), x2: sx(maxX), y2: sy(Math.max(minY, Math.min(maxY, yR))), stroke: "#DC2626", "stroke-width": "2.4" }, svg);
+
+  ds.m.forEach((xm, i) => {
+    el("circle", { cx: sx(xm), cy: sy(ds.a[i]), r: 4.8, fill: "#1D4ED8", stroke: "#FFF", "stroke-width": "1.3" }, svg);
+  });
+  const tt = el("text", { x: W / 2, y: 16, fill: "#0F172A", "font-size": "11.5", "font-weight": "700", "text-anchor": "middle" }, svg);
+  tt.textContent = `Recta Característica ${ds.lbl.split(" ")[0]} vs. S&P 500 (β = ${fmtDec(beta, 2)})`;
+}
+
+// --- Guía Flujos Ej. 1: Empresa XX Farmacéutico ---
+function drawGuiaXX() {
+  const i0 = +document.getElementById("gxx-i0").value;
+  const rf = +document.getElementById("gxx-rf").value;
+  const pr = +document.getElementById("gxx-pr").value;
+  document.getElementById("gxx-i0-v").textContent = "$" + fmtInt(i0);
+  document.getElementById("gxx-rf-v").textContent = fmtDec(rf, 1) + "%";
+  document.getElementById("gxx-pr-v").textContent = fmtDec(pr, 1) + "%";
+
+  const k = (rf + pr) / 100;
+  const fl = [-i0, 400000, 700000, 300000];
+  const vps = fl.map((v, t) => v / Math.pow(1 + k, t));
+  const van = vps.reduce((s, v) => s + v, 0);
+  const tir = calcIrr(fl) * 100;
+
+  document.getElementById("gxx-enun").innerHTML =
+    `La empresa XX evalúa un producto farmacéutico a 3 años con inversión <b>I<sub>0</sub> = $${fmtInt(i0)}</b> y tasa ajustada por riesgo <b>k = ${fmtDec(rf,1)}% + ${fmtDec(pr,1)}% = ${fmtDec(rf+pr,1)}%</b>. ` +
+    `Los flujos esperados ponderando las probabilidades oficiales (donde '−' equivale a $0) son: <b>E(F<sub>1</sub>) = $400.000</b>, <b>E(F<sub>2</sub>) = $700.000</b> y <b>E(F<sub>3</sub>) = $300.000</b>.`;
+
+  document.getElementById("gxx-k-van").textContent = `${van >= 0 ? "+" : "-"}$${fmtInt(Math.abs(van))}`;
+  document.getElementById("gxx-k-k").textContent = `Tasa k = ${fmtDec(rf + pr, 1)}%`;
+  document.getElementById("gxx-k-tir").textContent = fmtDec(tir, 2) + "%";
+  document.getElementById("gxx-k-dec").textContent = van >= 0 ? "ACEPTAR (VAN > 0 y TIR > k)" : "RECHAZAR (VAN < 0)";
+
+  document.getElementById("gxx-sol").innerHTML =
+    `<b>VAN(${fmtDec(rf+pr,1)}%):</b> −$${fmtInt(i0)} + $400.000/${fmtDec(1+k,3)} + $700.000/${fmtDec(Math.pow(1+k,2),4)} + $300.000/${fmtDec(Math.pow(1+k,3),4)} ` +
+    `= −$${fmtInt(i0)} + $${fmtInt(vps[1])} + $${fmtInt(vps[2])} + $${fmtInt(vps[3])} = <b>${van >= 0 ? "+" : "-"}$${fmtInt(Math.abs(van))}</b> | <b>TIR = ${fmtDec(tir,2)}%</b>`;
+
+  const svg = document.getElementById("svg-gxx");
+  if (!svg) return;
+  svg.innerHTML = "";
+  const M = { l: 74, r: 30, t: 24, b: 40 }, W = 980, H = 265;
+  const maxV = 850000, minV = -1600000;
+  const sy = v => H - M.b - ((v - minV) / (maxV - minV)) * (H - M.t - M.b);
+  el("line", { x1: M.l, y1: sy(0), x2: W - M.r, y2: sy(0), stroke: "#0F172A", "stroke-width": "1.6" }, svg);
+  const slot = (W - M.l - M.r) / 4, bw = 62;
+  ["Año 0 (I0)", "Año 1 (E[F1])", "Año 2 (E[F2])", "Año 3 (E[F3])"].forEach((lb, t) => {
+    const cx = M.l + t * slot + slot / 2;
+    const drawB = (x, val, col) => {
+      const yT = sy(Math.max(0, val)), yB = sy(Math.min(0, val));
+      el("rect", { x, y: yT, width: bw, height: Math.max(2, yB - yT), fill: col, rx: 3 }, svg);
+    };
+    drawB(cx - bw - 3, fl[t], t === 0 ? "#DC2626" : "#94A3B8");
+    drawB(cx + 3, vps[t], t === 0 ? "#991B1B" : "#1D4ED8");
+    const tv = el("text", { x: cx, y: fl[t] >= 0 ? sy(fl[t]) - 6 : sy(fl[t]) + 14, fill: "#0F172A", "font-size": "10.5", "font-weight": "800", "text-anchor": "middle" }, svg);
+    tv.textContent = `VP: ${vps[t] >= 0 ? "" : "-"}$${fmtInt(Math.abs(vps[t]))}`;
+    const tl = el("text", { x: cx, y: H - 10, fill: "#334155", "font-size": "11", "font-weight": "700", "text-anchor": "middle" }, svg);
+    tl.textContent = lb;
+  });
+}
+
 renderLecturaFin();
 renderQuizFin();
+drawGuiaEj1();
+drawGuiaEj2();
+renderGuiaEj4();
+drawGuia56();
+drawGuiaXX();
 </script>
 </body>
 </html>
@@ -1635,5 +2133,5 @@ renderQuizFin();
 
 
 def renderizar_estudio_fluido_finanzas_60fps():
-    """Renderiza el Estudio Financiero Integral a 60 FPS (7 módulos) sin recarga de servidor."""
+    """Renderiza el Estudio Financiero Integral a 60 FPS (8 módulos) sin recarga de servidor."""
     components.html(HTML_FINANZAS_60FPS, height=1180, scrolling=True)
