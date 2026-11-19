@@ -1090,15 +1090,33 @@ def _render_vista_evaluador_corporativo(solo_pizarra=False):
         )
 
     with tab5:
-        _, van_pes_fcl, tir_pes_fcl, pb_pes_fcl = construir_tabla_vista(es_inv=False, mult_ing=0.90)
-        _, van_opt_fcl, tir_opt_fcl, pb_opt_fcl = construir_tabla_vista(es_inv=False, mult_ing=1.10)
-        _, van_pes_fci, tir_pes_fci, pb_pes_fci = construir_tabla_vista(es_inv=True, mult_ing=0.90)
-        _, van_opt_fci, tir_opt_fci, pb_opt_fci = construir_tabla_vista(es_inv=True, mult_ing=1.10)
+        cs_top1, cs_top2 = st.columns([1.4, 2.2])
+        with cs_top1:
+            pct_sens_ing = st.selectbox(
+                "Variación de Ingresos para Sensibilidad (±%):",
+                options=[6.0, 10.0, 15.0, 20.0],
+                index=0 if "Caso 2" in plantilla else 1,
+                format_func=lambda x: f"±{x:.0f}% Ingresos" + (" (Guía Planta Piloto ULagos)" if x == 6.0 else (" (Estándar)" if x == 10.0 else "")),
+                key="sel_pct_sens_ing_v2",
+            )
+        delta_s = pct_sens_ing / 100.0
+        _, van_pes_fcl, tir_pes_fcl, pb_pes_fcl = construir_tabla_vista(es_inv=False, mult_ing=1.0 - delta_s)
+        _, van_opt_fcl, tir_opt_fcl, pb_opt_fcl = construir_tabla_vista(es_inv=False, mult_ing=1.0 + delta_s)
+        _, van_pes_fci, tir_pes_fci, pb_pes_fci = construir_tabla_vista(es_inv=True, mult_ing=1.0 - delta_s)
+        _, van_opt_fci, tir_opt_fci, pb_opt_fci = construir_tabla_vista(es_inv=True, mult_ing=1.0 + delta_s)
+
+        with cs_top2:
+            van_esp_55_45_fcl = 0.55 * van_fcl + 0.45 * van_pes_fcl
+            van_esp_55_45_fci = 0.55 * van_fci + 0.45 * van_pes_fci
+            st.info(
+                f"**Inciso Guía (55% Base / 45% Ingresos −{pct_sens_ing:.0f}%):** "
+                f"E(VAN FCL) = **${van_esp_55_45_fcl:,.0f}** | E(VAN FCI) = **${van_esp_55_45_fci:,.0f}**"
+            )
 
         df_sens = pd.DataFrame([
-            {"Escenario": "Pesimista (-10% Ingresos)", "VAN FCL ($)": round(van_pes_fcl), "TIR FCL (%)": round(tir_pes_fcl * 100, 2), "Payback FCL": pb_pes_fcl, "VAN Inversionista ($)": round(van_pes_fci), "TIR Inversionista (%)": round(tir_pes_fci * 100, 2)},
+            {"Escenario": f"Pesimista (-{pct_sens_ing:.0f}% Ingresos)", "VAN FCL ($)": round(van_pes_fcl), "TIR FCL (%)": round(tir_pes_fcl * 100, 2), "Payback FCL": pb_pes_fcl, "VAN Inversionista ($)": round(van_pes_fci), "TIR Inversionista (%)": round(tir_pes_fci * 100, 2)},
             {"Escenario": "Caso Base (100%)", "VAN FCL ($)": round(van_fcl), "TIR FCL (%)": round(tir_fcl * 100, 2), "Payback FCL": pb_fcl, "VAN Inversionista ($)": round(van_fci), "TIR Inversionista (%)": round(tir_fci * 100, 2)},
-            {"Escenario": "Optimista (+10% Ingresos)", "VAN FCL ($)": round(van_opt_fcl), "TIR FCL (%)": round(tir_opt_fcl * 100, 2), "Payback FCL": pb_opt_fcl, "VAN Inversionista ($)": round(van_opt_fci), "TIR Inversionista (%)": round(tir_opt_fci * 100, 2)},
+            {"Escenario": f"Optimista (+{pct_sens_ing:.0f}% Ingresos)", "VAN FCL ($)": round(van_opt_fcl), "TIR FCL (%)": round(tir_opt_fcl * 100, 2), "Payback FCL": pb_opt_fcl, "VAN Inversionista ($)": round(van_opt_fci), "TIR Inversionista (%)": round(tir_opt_fci * 100, 2)},
         ])
         st.dataframe(df_sens, use_container_width=True, hide_index=True)
 
@@ -1957,7 +1975,7 @@ def main():
             """
             <div style="background-color:#0F172A;color:#FFFFFF;padding:12px 20px;border-radius:8px;margin-bottom:10px;">
                 <div style="font-size:15.5px;font-weight:700;">ESTUDIO INTERACTIVO A 60 FPS — FINANZAS AVANZADAS (ULAGOS 2026)</div>
-                <div style="font-size:12px;color:#CBD5E1;margin-top:2px;">7 módulos sin lag: Separación de Fisher, Riesgo y Juego Justo, Markowitz (252d) y CAPM, Hamada/WACC/APV, Conflicto VAN vs. TIR + PGU DuPont, Hoja Mecánica y Mapa Teórico + Lectura Viva.</div>
+                <div style="font-size:12px;color:#CBD5E1;margin-top:2px;">8 módulos sin lag: Separación de Fisher, Riesgo y Juego Justo, Markowitz (252d) y CAPM, Hamada/WACC/APV, VAN vs. TIR + PGU DuPont, Hoja Mecánica, Mapa Teórico + Lectura Viva y Guías Oficiales Resueltas.</div>
             </div>
             """,
             unsafe_allow_html=True,
