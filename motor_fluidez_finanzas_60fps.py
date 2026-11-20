@@ -121,8 +121,10 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   .f-eq {
     font-family: "Cambria Math", "Times New Roman", Georgia, serif;
     font-size: 14.5px; font-weight: 700; color: #0F172A; letter-spacing: 0.2px;
-    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+    display: block; line-height: 1.65;
   }
+  .f-eq sup, .fstrip-eq sup, .fstrip-sub sup { font-size: 0.72em; vertical-align: super; line-height: 0; }
+  .f-eq sub, .fstrip-eq sub, .fstrip-sub sub { font-size: 0.72em; vertical-align: sub; line-height: 0; }
   .f-rule { font-size: 11px; color: #334155; margin-top: 5px; line-height: 1.32; }
   .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; font-size: 0.88em; line-height: 1.1; }
   .frac .num { border-bottom: 1.4px solid #0F172A; padding: 0 3px 1px 3px; text-align: center; }
@@ -139,6 +141,34 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   .s-sub { font-size: 10.5px; color: #475569; margin-top: 4px; line-height: 1.3; }
   .blind-mode .s-card:not(.revealed) .sk-lbl { opacity: 0; }
   .blind-mode .s-card:not(.revealed) .s-sub { visibility: hidden; }
+  /* === PLANTILLAS VERTICALES DE FLUJOS DE CAJA (MODO CIEGO + CUADERNO) === */
+  .flj-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 900px) { .flj-grid { grid-template-columns: 1fr; } }
+  .flj-card {
+    border: 1px solid #CBD5E1; border-top: 3.5px solid #1E3A8A; border-radius: 6px;
+    background: #FFFFFF; padding: 9px 11px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .flj-card:hover { border-color: #60A5FA; }
+  .flj-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .flj-title { font-size: 12px; font-weight: 800; color: #0F172A; }
+  .flj-badge { font-size: 10px; font-weight: 800; color: #FFFFFF; background: #1E3A8A; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+  .flj-rows { display: flex; flex-direction: column; gap: 2.5px; }
+  .flj-row {
+    display: flex; align-items: baseline; gap: 6px; font-size: 11.2px; line-height: 1.35;
+    padding: 2.5px 6px; border-radius: 4px; background: #F8FAFC; color: #1E293B;
+  }
+  .flj-row.sub { background: #EFF6FF; font-weight: 800; color: #0F172A; border-top: 1px solid #BFDBFE; border-bottom: 1px solid #BFDBFE; }
+  .flj-row.tot { background: #DCFCE7; font-weight: 800; color: #14532D; border: 1px solid #4ADE80; }
+  .flj-row.hlt { background: #FEF3C7; color: #78350F; font-weight: 700; }
+  .flj-sgn { font-family: Consolas, monospace; font-weight: 800; min-width: 28px; display: inline-block; }
+  .sg-p { color: #15803D; }
+  .sg-m { color: #DC2626; }
+  .sg-e { color: #1D4ED8; }
+  .flj-foot { font-size: 10.6px; color: #475569; margin-top: 6px; border-top: 1px dashed #CBD5E1; padding-top: 5px; line-height: 1.35; }
+  .blind-mode .flj-card:not(.revealed) .flj-rows,
+  .blind-mode .flj-card:not(.revealed) .flj-foot { display: none; }
+  .blind-mode .flj-card:not(.revealed) .blind-cover { display: block; padding: 24px 8px; }
+
 
   /* === MAPA TEÓRICO Y LECTURA VIVA === */
   .map-detail-card {
@@ -214,6 +244,127 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
   .g-tbl td:first-child { text-align: left; font-family: inherit; font-weight: 700; background: #F8FAFC; }
   .g-subgrid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 11px; align-items: start; }
   @media (max-width: 840px) { .g-subgrid { grid-template-columns: 1fr; } }
+  /* === TARJETAS DE FÓRMULAS VIVAS (GRANDE + EDITABLE IN-PLACE + RAYOS X) === */
+  .fstrip-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 10px; margin: 10px 0 12px 0;
+  }
+  .fstrip-card {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+    border: 1px solid #CBD5E1; border-left: 4px solid #1E3A8A;
+    border-radius: 8px; padding: 11px 14px;
+    transition: box-shadow 0.16s ease, border-color 0.16s ease;
+    position: relative;
+  }
+  .fstrip-card:hover {
+    border-color: #93C5FD; box-shadow: 0 3px 12px rgba(29, 78, 216, 0.09);
+  }
+  .fstrip-card.xray-on {
+    background: linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%);
+    border-color: #3B82F6;
+    box-shadow: 0 4px 14px rgba(29, 78, 216, 0.14);
+  }
+  .fstrip-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    margin-bottom: 7px; cursor: pointer;
+  }
+  .fstrip-lbl { font-size: 12px; font-weight: 800; color: #1E3A8A; letter-spacing: 0.1px; }
+  .xray-pill {
+    font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 12px;
+    border: 1px solid #BFDBFE; background: #EFF6FF; color: #1D4ED8;
+    white-space: nowrap; transition: all 0.15s ease; cursor: pointer;
+  }
+  .xray-pill:hover { background: #DBEAFE; }
+  .fstrip-card.xray-on .xray-pill {
+    background: #0F172A; color: #FFFFFF; border-color: #0F172A;
+  }
+  .fstrip-eq {
+    font-family: "Cambria Math", "Times New Roman", Georgia, serif;
+    font-size: 16.5px; font-weight: 700; color: #0F172A;
+    display: block; line-height: 1.75;
+  }
+  .fstrip-sub {
+    font-family: "Cambria Math", "Times New Roman", Georgia, serif;
+    font-size: 15.2px; font-weight: 700; color: #0F172A;
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed #CBD5E1;
+    display: block; line-height: 1.95;
+  }
+  .fstrip-card.xray-on .fstrip-eq { display: none; }
+  .fstrip-card.xray-on .fstrip-sub {
+    margin-top: 4px; padding-top: 2px; border-top: none; font-size: 17.5px; line-height: 2.05;
+  }
+  .fstrip-card .frac {
+    font-size: 0.96em; margin: 0 3px; line-height: 1.25;
+  }
+  .fstrip-card .frac .num {
+    border-bottom: 1.7px solid #0F172A; padding: 0 5px 2px 5px;
+  }
+  .fstrip-card .frac .den {
+    padding: 2px 5px 0 5px;
+  }
+  .fstrip-note {
+    font-size: 11.4px; color: #475569; margin-top: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex; flex-wrap: wrap; gap: 5px; align-items: center; line-height: 1.4;
+  }
+  .v-chip {
+    display: inline-block; padding: 1px 7px; border-radius: 5px;
+    font-family: Consolas, monospace; font-size: 0.94em; font-weight: 800;
+    border: 1.3px solid transparent; line-height: 1.35; vertical-align: baseline;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .v-chip.editable {
+    cursor: text; border-style: dashed;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .v-chip.editable:hover {
+    transform: translateY(-1px) scale(1.04);
+    border-style: solid;
+    box-shadow: 0 0 0 2.5px rgba(29, 78, 216, 0.22);
+  }
+  .chip-inline-in {
+    font-family: Consolas, monospace; font-size: 0.96em; font-weight: 800;
+    color: #0F172A; background: #FFFFFF; border: 2px solid #1D4ED8;
+    border-radius: 5px; padding: 1px 5px; text-align: center;
+    outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.20);
+    vertical-align: baseline;
+  }
+  .vc-b { background: #DBEAFE; color: #1E40AF; border-color: #60A5FA; }
+  .vc-t { background: #CCFBF1; color: #0F766E; border-color: #2DD4BF; }
+  .vc-p { background: #F3E8FF; color: #6B21A8; border-color: #C084FC; }
+  .vc-o { background: #FFEDD5; color: #9A3412; border-color: #FB923C; }
+  .vc-r { background: #FEE2E2; color: #991B1B; border-color: #F87171; }
+  .vc-g { background: #DCFCE7; color: #166534; border-color: #4ADE80; }
+  .vc-res {
+    background: #15803D; color: #FFFFFF; border-color: #166534;
+    padding: 2px 8px; border-radius: 6px; font-family: Consolas, monospace;
+    font-size: 0.98em; font-weight: 800; display: inline-block; line-height: 1.35;
+  }
+  .vc-res.neg { background: #DC2626; border-color: #991B1B; }
+  @keyframes chipPop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.09); filter: brightness(1.05); }
+    100% { transform: scale(1); }
+  }
+  .v-pop { animation: chipPop 0.25s ease-out; }
+  .sym-b { color: #1D4ED8; }
+  .sym-t { color: #0F766E; }
+  .sym-p { color: #7C3AED; }
+  .sym-o { color: #C2410C; }
+  .sym-r { color: #DC2626; }
+  .teo-box {
+    margin-top: 10px; background: #FFFFFF; border: 1px solid #CBD5E1;
+    border-left: 4px solid #334155; border-radius: 6px; padding: 8px 12px;
+    font-size: 11.9px; line-height: 1.48; color: #1E293B;
+  }
+  .teo-box summary {
+    cursor: pointer; font-weight: 800; color: #0F172A; font-size: 12px; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .teo-box summary::-webkit-details-marker { display: none; }
+  .teo-body { margin-top: 7px; border-top: 1px dashed #CBD5E1; padding-top: 7px; }
+  .teo-body ul { margin: 4px 0 0 18px; padding: 0; }
+  .teo-body li { margin-bottom: 4px; }
 
   @media print {
     body { background: #FFFFFF !important; }
@@ -227,6 +378,10 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
     .blind-mode .f-card .blind-cover { display: none !important; }
     .blind-mode .s-card .sk-lbl { opacity: 1 !important; }
     .blind-mode .s-card .s-sub { visibility: visible !important; }
+    .blind-mode .flj-card .flj-rows { display: flex !important; }
+    .blind-mode .flj-card .flj-foot { display: block !important; }
+    .blind-mode .flj-card .blind-cover { display: none !important; }
+    .flj-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
     .skel-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
   }
 </style>
@@ -234,14 +389,14 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 <body>
 <div class="wrap">
   <div class="top-tabs">
-    <button class="tab-btn active" onclick="openTab('fisher', this)">1. Separación de Fisher</button>
-    <button class="tab-btn" onclick="openTab('riesgo', this)">2. Riesgo y Juego Justo</button>
-    <button class="tab-btn" onclick="openTab('markowitz', this)">3. Markowitz (252d) y CAPM</button>
-    <button class="tab-btn" onclick="openTab('hamada', this)">4. Hamada, WACC y APV</button>
-    <button class="tab-btn" onclick="openTab('vantir', this)">5. VAN vs. TIR y PGU DuPont</button>
-    <button class="tab-btn" onclick="openTab('mecanica', this)">6. Hoja Mecánica (Modo Ciego)</button>
-    <button class="tab-btn" onclick="openTab('lectura', this)">7. Mapa Teórico y Lectura Viva</button>
-    <button class="tab-btn" onclick="openTab('guias', this)">8. Guías Oficiales Resueltas</button>
+    <button class="tab-btn active" onclick="openTab('fisher', this)">1. Consumo-Inversión y Separación de Fisher</button>
+    <button class="tab-btn" onclick="openTab('riesgo', this)">2. Actitudes al Riesgo, Juego Justo y Prima π</button>
+    <button class="tab-btn" onclick="openTab('markowitz', this)">3. Frontera Eficiente Markowitz (252d) y CAPM</button>
+    <button class="tab-btn" onclick="openTab('hamada', this)">4. Estructura de Capital: Hamada, WACC y APV</button>
+    <button class="tab-btn" onclick="openTab('vantir', this)">5. Conflicto VAN vs. TIR (Fisher) y PGU DuPont</button>
+    <button class="tab-btn" onclick="openTab('mecanica', this)">6. Formulario de Fórmulas y Gráficos (Modo Ciego)</button>
+    <button class="tab-btn" onclick="openTab('lectura', this)">7. Mapa Teórico Integrado y Control de Lectura</button>
+    <button class="tab-btn" onclick="openTab('guias', this)">8. Guías Oficiales Resueltas (CPA y Flujos)</button>
   </div>
 
   <!-- ====================================================================== -->
@@ -280,9 +435,23 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">Mercado Financiero en t=0</div><div id="fs-k-pos" class="kpi-val">Pide prestado</div><div id="fs-k-pos2" class="kpi-sub">Separación objetiva</div></div>
     </div>
 
+    <div id="fs-fstrip" class="fstrip-grid"></div>
     <div class="svg-box"><svg id="svg-fisher" viewBox="0 0 980 395"></svg></div>
     <div id="fs-sol" class="sol-box"></div>
     <div id="ped-fisher" class="ped-grid"></div>
+    <details class="teo-box">
+      <summary>
+        <span>Marco Teórico: Consumo–Inversión y Separación de Fisher (Consumo - Inversión.pdf · Brealey Cap. 2)</span>
+        <span class="enun-badge">Desplegar teoría de apoyo</span>
+      </summary>
+      <div class="teo-body">
+        <ul>
+          <li><b>Óptimo Productivo Objetivo (P*):</b> la empresa ejecuta proyectos físicos hasta el punto donde la Rentabilidad Marginal de la Inversión iguala la tasa de mercado (<b>RMgI = r<sub>f</sub></b>), maximizando el VAN y la riqueza presente <b>W<sub>0</sub>* = Y<sub>0</sub> + VAN</b>.</li>
+          <li><b>Óptimo de Consumo Subjetivo (C*):</b> cada accionista se mueve sobre la Línea del Mercado de Capitales (pendiente <b>−(1 + r<sub>f</sub>)</b>) hasta igualar su Tasa Marginal de Sustitución <b>TMS = −(1 + r<sub>f</sub>)</b>, pidiendo prestado si es impaciente o ahorrando si prefiere consumo futuro.</li>
+          <li><b>¿Cuándo se rompe la separación?</b> Si existen fricciones de mercado (tasa activa de crédito &gt; tasa pasiva de ahorro, costos de transacción o racionamiento de crédito), las preferencias de consumo vuelven a interferir en la inversión óptima.</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ====================================================================== -->
@@ -322,8 +491,22 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="kpi" style="border-left-color:#1D4ED8;"><div class="kpi-lbl">Decisión Racional</div><div id="rk-k-dec" class="kpi-val">RECHAZA JUEGO</div><div id="rk-k-dec2" class="kpi-sub">Prefiere W0 seguro</div></div>
     </div>
 
+    <div id="rk-fstrip" class="fstrip-grid"></div>
     <div class="svg-box"><svg id="svg-riesgo" viewBox="0 0 980 385"></svg></div>
     <div id="ped-riesgo" class="ped-grid"></div>
+    <details class="teo-box">
+      <summary>
+        <span>Marco Teórico: Utilidad Esperada, Juego Justo y Prima por Riesgo (Relación riesgo rentabilidad.pdf)</span>
+        <span class="enun-badge">Desplegar teoría de apoyo</span>
+      </summary>
+      <div class="teo-body">
+        <ul>
+          <li><b>Juego Justo:</b> aquella lotería cuyo valor esperado iguala exactamente la riqueza segura inicial (<b>E(W) = W<sub>0</sub></b>).</li>
+          <li><b>3 Actitudes frente al Riesgo (Von Neumann–Morgenstern):</b> (1) <b>Averso (U'' &lt; 0, cóncava):</b> rechaza todo juego justo, <b>EC &lt; E(W)</b> y prima <b>π &gt; 0</b>; (2) <b>Neutral (U'' = 0, lineal):</b> indiferente al riesgo, <b>EC = E(W)</b> y <b>π = 0</b>; (3) <b>Amante (U'' &gt; 0, convexa):</b> acepta juegos justos, <b>EC &gt; E(W)</b> y <b>π &lt; 0</b>.</li>
+          <li><b>Equivalente Cierto (EC):</b> monto de dinero seguro que entrega exactamente la misma utilidad que la inversión riesgosa (<b>U(EC) = E[U(W)]</b>).</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ====================================================================== -->
@@ -364,8 +547,22 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="kpi" style="border-left-color:#7C3AED;"><div class="kpi-lbl">Ahorro de Riesgo (Diversif.)</div><div id="mk-k-div" class="kpi-val">-6,2 pp</div><div class="kpi-sub">vs promedio lineal (ρ=1)</div></div>
     </div>
 
+    <div id="mk-fstrip" class="fstrip-grid"></div>
     <div class="svg-box"><svg id="svg-markowitz" viewBox="0 0 980 390"></svg></div>
     <div id="ped-markowitz" class="ped-grid"></div>
+    <details class="teo-box">
+      <summary>
+        <span>Marco Teórico: Frontera Eficiente (252 días), CML y CAPM / SML (Teoría de mercado de capitales.pdf)</span>
+        <span class="enun-badge">Desplegar teoría de apoyo</span>
+      </summary>
+      <div class="teo-body">
+        <ul>
+          <li><b>Efecto Diversificación (ρ &lt; +1):</b> mientras la correlación entre activos sea menor que +1, la desviación estándar del portafolio es estrictamente menor que el promedio ponderado de las volatilidades individuales. Con <b>ρ = −1</b> teóricamente se puede anular el riesgo por completo.</li>
+          <li><b>Anualización Bursátil (Taller IPSA $65M):</b> la varianza escala con 252 días hábiles, por lo que la volatilidad anual se obtiene con <b>σ<sub>anual</sub> = σ<sub>diaria</sub>·√252</b>; la tasa libre de riesgo R<sub>f</sub> proviene de los bonos BCP/BTP a 5 años del Banco Central.</li>
+          <li><b>CML vs. SML (CAPM):</b> la <b>CML</b> relaciona retorno con <b>riesgo total σ<sub>p</sub></b> (solo carteras eficientes); la <b>SML</b> relaciona retorno con <b>riesgo sistemático β</b> (sirve para cualquier acción individual: sobre la SML tiene α &gt; 0 y está subvalorada).</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ====================================================================== -->
@@ -405,9 +602,23 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="kpi" style="border-left-color:#0F172A;"><div class="kpi-lbl">Valor Apalancado APV ($100M base)</div><div id="hm-k-apv" class="kpi-val">$108,9M</div><div id="hm-k-esc" class="kpi-sub">Escudo t·B = +$8,9M</div></div>
     </div>
 
+    <div id="hm-fstrip" class="fstrip-grid"></div>
     <div class="svg-box"><svg id="svg-hamada" viewBox="0 0 980 380"></svg></div>
     <div id="hm-sol" class="sol-box"></div>
     <div id="ped-hamada" class="ped-grid"></div>
+    <details class="teo-box">
+      <summary>
+        <span>Marco Teórico: Ecuación de Hamada, WACC y Modigliani–Miller con Impuestos (APV)</span>
+        <span class="enun-badge">Desplegar teoría de apoyo</span>
+      </summary>
+      <div class="teo-body">
+        <ul>
+          <li><b>Desapalancar y Reapalancar (Hamada):</b> el beta observado en bolsa (<b>β<sub>L</sub></b>) mezcla riesgo operativo y riesgo financiero. Para evaluar un proyecto con otra estructura de deuda, primero desapalanca comparables (<b>β<sub>U</sub> = β<sub>L</sub> / [1 + (1−t)(B/S)]</b>) y luego reapalanca con el <b>B/S</b> propio.</li>
+          <li><b>WACC y Escudo Fiscal:</b> como los intereses rebajan impuesto corporativo, el costo efectivo de la deuda es <b>K<sub>d</sub>(1 − t)</b>. Por eso endeudarse reduce el WACC (hasta que aparecen costos de quiebra) aunque suba K<sub>e</sub>.</li>
+          <li><b>Valor Presente Ajustado (APV):</b> <b>V<sub>L</sub> = V<sub>U</sub> + VP(Escudo Fiscal)</b>. Con deuda perpetua sin costos de insolvencia, el escudo fiscal vale exactamente <b>t · B</b>.</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ====================================================================== -->
@@ -435,6 +646,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div class="kpi" style="border-left-color:#15803D;"><div class="kpi-lbl">Decisión Óptima Accionista</div><div id="vt-k-win" class="kpi-val">ELEGIR A</div><div id="vt-k-win2" class="kpi-sub">Mayor creación de valor</div></div>
     </div>
 
+    <div id="vt-fstrip" class="fstrip-grid"></div>
     <div class="svg-box"><svg id="svg-vantir" viewBox="0 0 980 285"></svg></div>
 
     <div class="sec-title" style="margin-top:12px;">
@@ -450,6 +662,19 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
       <div id="pg-box" class="sol-box" style="margin-top:0;"></div>
     </div>
     <div id="ped-vantir" class="ped-grid"></div>
+    <details class="teo-box">
+      <summary>
+        <span>Marco Teórico: Tasa de Fisher (VAN vs. TIR) y Poder Generador de Utilidades (PGU / DuPont)</span>
+        <span class="enun-badge">Desplegar teoría de apoyo</span>
+      </summary>
+      <div class="teo-body">
+        <ul>
+          <li><b>¿Por qué ocurre el conflicto VAN vs. TIR?</b> Por diferencias de escala o perfil temporal de flujos (un proyecto cobra rápido y el otro cobra fuerte al final). La <b>Tasa de Fisher (r*)</b> es el punto exacto donde <b>VAN(A) = VAN(B)</b> (TIR del flujo incremental A − B).</li>
+          <li><b>Regla de Oro para Proyectos Mutuamente Excluyentes:</b> a tasas menores que r*, la TIR y el VAN se contradicen; siempre manda el <b>mayor VAN positivo</b> porque asume reinversión realista al costo de capital r y mide riqueza directa en pesos de hoy.</li>
+          <li><b>Identidad DuPont Operacional (PGU):</b> <b>PGU = (EBIT / Ventas) × (Ventas / Activos Op.)</b>. Permite comparar si la rentabilidad operativa viene por diferenciación (alto margen) o por volumen/eficiencia (alta rotación).</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ====================================================================== -->
@@ -468,21 +693,28 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
 
     <div class="mec-toolbar">
       <div style="font-size:12px;color:#334155;">
-        <b>Método de cuaderno:</b> copia las 16 fórmulas y los 6 esqueletos; luego activa <b>Modo Ciego</b>, escríbelos de memoria y haz clic en cada tarjeta para comprobar y marcar <b>✓</b>.
+        <b>Método de cuaderno:</b> copia las 22 fórmulas, las 3 estructuras verticales de Flujos (FCL / FCI / Reemplazo) y los 6 gráficos; luego activa <b>Modo Ciego</b>, escríbelos de memoria y haz clic en cada bloque para corregirte y marcar <b>✓</b>.
       </div>
-      <span id="mec-score" class="pill-score">Dominadas: 0 / 18</span>
+      <span id="mec-score" class="pill-score">Dominadas: 0 / 22</span>
     </div>
 
     <div class="mec-filters">
-      <button class="flt-btn active" onclick="filtrarMec('all', this)">Todas (18)</button>
+      <button class="flt-btn active" onclick="filtrarMec('all', this)">Todas (22)</button>
       <button class="flt-btn" onclick="filtrarMec('fsh', this)">I. Fisher, Riesgo y PGU (4)</button>
-      <button class="flt-btn" onclick="filtrarMec('mk', this)">II. Markowitz, Estadística y CAPM (6)</button>
-      <button class="flt-btn" onclick="filtrarMec('cap', this)">III. Hamada, WACC y APV (4)</button>
-      <button class="flt-btn" onclick="filtrarMec('flj', this)">IV. Flujos FCL / FCI y Criterios (4)</button>
+      <button class="flt-btn" onclick="filtrarMec('mk', this)">II. Markowitz, Estadística y CAPM (7)</button>
+      <button class="flt-btn" onclick="filtrarMec('cap', this)">III. Hamada, WACC, Deuda y APV (5)</button>
+      <button class="flt-btn" onclick="filtrarMec('flj', this)">IV. Flujos FCL / FCI, Valor Libro y Criterios (6)</button>
     </div>
 
     <div id="mec-container">
       <div class="mec-grid" id="mec-formulas-grid"></div>
+
+      <div class="sec-title" style="margin-top:6px;">
+        <span>Estructuras Verticales de Flujos de Caja para Memorizar (FCL · FCI · Reemplazo y Deuda)</span>
+        <span style="font-size:11px;font-weight:600;color:#334155;">En Modo Ciego, haz clic en cada plantilla para comprobar el orden y los signos</span>
+      </div>
+      <div class="flj-grid" id="mec-flujos-grid"></div>
+
       <div class="sec-title" style="margin-top:6px;">
         <span>Esqueletos de Gráficos Clave para Repaso en Cuaderno (6 diagramas)</span>
         <span style="font-size:11px;font-weight:600;color:#334155;">En Modo Ciego, haz clic en cada gráfico para revelar las etiquetas</span>
@@ -573,6 +805,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
         <div class="kpi" style="border-left-color:#059669;"><div class="kpi-lbl">Rango ±2σ (95,44%)</div><div id="g1-k2" class="kpi-val">[-34,7% ; 63,3%]</div><div class="kpi-sub">μ ± 2·σ</div></div>
         <div class="kpi" style="border-left-color:#EA580C;"><div class="kpi-lbl">Rango ±3σ (99,74%)</div><div id="g1-k3" class="kpi-val">[-59,2% ; 87,8%]</div><div class="kpi-sub">μ ± 3·σ</div></div>
       </div>
+      <div id="g1-fstrip" class="fstrip-grid"></div>
       <div class="svg-box"><svg id="svg-g1-gauss" viewBox="0 0 980 320"></svg></div>
     </div>
 
@@ -606,6 +839,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
         <div class="kpi" style="border-left-color:#7C3AED;"><div class="kpi-lbl">Covarianza y Correlación</div><div class="kpi-val">ρ = −0,1639</div><div class="kpi-sub">Cov(A,B) = −0,004875</div></div>
         <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">Cartera Activa (Rp / σp)</div><div id="g2-k-p" class="kpi-val">9,10% | 10,22%</div><div id="g2-k-vp" class="kpi-sub">Var(p) = 0,010451</div></div>
       </div>
+      <div id="g2-fstrip" class="fstrip-grid"></div>
       <div class="g-subgrid">
         <div id="g2-tbl-box"></div>
         <div class="svg-box"><svg id="svg-g2-port" viewBox="0 0 460 280"></svg></div>
@@ -677,6 +911,7 @@ HTML_FINANZAS_60FPS = r"""<!DOCTYPE html>
         <div class="kpi" style="border-left-color:#15803D;"><div class="kpi-lbl">VAN del Proyecto (a k = Rf+Prima)</div><div id="gxx-k-van" class="kpi-val">+$167.543</div><div id="gxx-k-k" class="kpi-sub">Tasa k = 10,0%</div></div>
         <div class="kpi" style="border-left-color:#DC2626;"><div class="kpi-lbl">TIR del Proyecto</div><div id="gxx-k-tir" class="kpi-val">19,55%</div><div id="gxx-k-dec" class="kpi-sub">ACEPTAR (TIR &gt; k)</div></div>
       </div>
+      <div id="gxx-fstrip" class="fstrip-grid"></div>
       <div class="svg-box"><svg id="svg-gxx" viewBox="0 0 980 265"></svg></div>
       <div id="gxx-sol" class="sol-box"></div>
       <div class="sol-box" style="border-left-color:#1D4ED8;">
@@ -712,6 +947,169 @@ function drawAxisBreakX(svg, xPos, yBot) {
   el("rect", { x: xPos - 5, y: yBot - 5, width: 10, height: 10, fill: "#FFFFFF" }, svg);
   el("line", { x1: xPos - 4, y1: yBot + 5, x2: xPos, y2: yBot - 5, stroke: "#0F172A", "stroke-width": "1.5" }, svg);
   el("line", { x1: xPos + 1, y1: yBot + 5, x2: xPos + 5, y2: yBot - 5, stroke: "#0F172A", "stroke-width": "1.5" }, svg);
+}
+
+const fstripXrayState = {};
+const fstripPrevVals = {};
+
+function mFrac(num, den) {
+  return `<span class="frac"><span class="num">${num}</span><span class="den">${den}</span></span>`;
+}
+function vChip(val, cls="vc-b", tip="", trackKey="") {
+  let pop = "";
+  if (trackKey) {
+    if (fstripPrevVals[trackKey] !== undefined && fstripPrevVals[trackKey] !== String(val)) pop = " v-pop";
+    fstripPrevVals[trackKey] = String(val);
+  }
+  const tAttr = tip ? ` title="${tip.replace(/"/g, '&quot;')}"` : "";
+  return `<span class="v-chip ${cls}${pop}"${tAttr}>${val}</span>`;
+}
+function eChip(displayVal, rawNum, bindKey, step="any", cls="vc-b", tip="") {
+  let pop = "";
+  if (bindKey) {
+    if (fstripPrevVals[bindKey] !== undefined && fstripPrevVals[bindKey] !== String(displayVal)) pop = " v-pop";
+    fstripPrevVals[bindKey] = String(displayVal);
+  }
+  const fullTip = (tip ? tip + " · " : "") + "Clic para editar directo en la fórmula (Enter aplica)";
+  const tAttr = ` title="${fullTip.replace(/"/g, '&quot;')}"`;
+  return `<span class="v-chip editable ${cls}${pop}"${tAttr} data-bind="${bindKey}" data-raw="${rawNum}" data-step="${step}" onclick="openChipEditor(event, this)">${displayVal}</span>`;
+}
+function rChip(val, isNeg=false, tip="") {
+  const tAttr = tip ? ` title="${tip.replace(/"/g, '&quot;')}"` : "";
+  return `<span class="vc-res${isNeg ? ' neg' : ''}"${tAttr}>${val}</span>`;
+}
+function toggleXrayCard(cardKey, headEl) {
+  const cardEl = headEl.closest(".fstrip-card");
+  if (!cardEl) return;
+  fstripXrayState[cardKey] = !fstripXrayState[cardKey];
+  cardEl.classList.toggle("xray-on", !!fstripXrayState[cardKey]);
+  const pill = cardEl.querySelector(".xray-pill");
+  if (pill) pill.textContent = fstripXrayState[cardKey] ? "Rayos X: ON ⇄" : "f(x) → 123";
+}
+function setSliderSmart(id, val, hardMin=null, hardMax=null) {
+  const sl = document.getElementById(id);
+  if (!sl) return val;
+  let v = val;
+  if (hardMin !== null) v = Math.max(hardMin, v);
+  if (hardMax !== null) v = Math.min(hardMax, v);
+  if (v > parseFloat(sl.max) && (hardMax === null || v <= hardMax)) sl.max = Math.ceil(v * 1.25);
+  if (v < parseFloat(sl.min) && (hardMin === null || v >= hardMin)) sl.min = Math.floor(v * 0.5);
+  sl.value = v;
+  return v;
+}
+function applyChipEdit(bindKey, rawStr) {
+  const clean = String(rawStr || "").replace(/,/g, ".").trim();
+  const val = parseFloat(clean);
+  if (!Number.isFinite(val)) return false;
+
+  // 1. Separación de Fisher
+  if (bindKey === "fs_y0") { setSliderSmart("fs-y0", Math.max(20, val), 20, null); drawFisher(); return true; }
+  if (bindKey === "fs_rf") { setSliderSmart("fs-rf", val, 0.5, 40.0); drawFisher(); return true; }
+  if (bindKey === "fs_a")  { setSliderSmart("fs-a", Math.max(5, val), 5, null); drawFisher(); return true; }
+  if (bindKey === "fs_al") { setSliderSmart("fs-al", val, 0.10, 0.90); drawFisher(); return true; }
+
+  // 2. Actitudes al Riesgo
+  if (bindKey === "rk_g")  { setSliderSmart("rk-g", val, 0.15, 2.50); drawRiesgo(); return true; }
+  if (bindKey === "rk_w1") { setSliderSmart("rk-w1", Math.max(1, val), 1, null); drawRiesgo(); return true; }
+  if (bindKey === "rk_w2") { setSliderSmart("rk-w2", Math.max(2, val), 2, null); drawRiesgo(); return true; }
+  if (bindKey === "rk_p")  { const pct = val <= 1.0 && val > 0 ? Math.round(val * 100) : Math.round(val); setSliderSmart("rk-p", pct, 5, 95); drawRiesgo(); return true; }
+  if (bindKey === "rk_w0") { setSliderSmart("rk-w0", Math.max(1, val), 1, null); drawRiesgo(); return true; }
+
+  // 3. Markowitz y CAPM
+  if (bindKey === "mk_rho") { setSliderSmart("mk-rho", val, -0.95, 1.00); drawMarkowitz(); return true; }
+  if (bindKey === "mk_wa")  { const pct = val <= 1.0 && val >= 0 ? Math.round(val * 100) : Math.round(val); setSliderSmart("mk-wa", pct, 0, 100); drawMarkowitz(); return true; }
+  if (bindKey === "mk_sa")  { setSliderSmart("mk-sa", val, 0.20, 5.00); drawMarkowitz(); return true; }
+  if (bindKey === "mk_sb")  { setSliderSmart("mk-sb", val, 0.20, 5.00); drawMarkowitz(); return true; }
+  if (bindKey === "mk_rf")  { setSliderSmart("mk-rf", val, 0.5, 15.0); drawMarkowitz(); return true; }
+
+  // 4. Hamada, WACC y APV
+  if (bindKey === "hm_bu") { setSliderSmart("hm-bu", val, 0.10, 3.00); drawHamada(); return true; }
+  if (bindKey === "hm_dv") { const pct = val < 1.0 && val > 0 ? Math.round(val * 100) : Math.round(val); setSliderSmart("hm-dv", pct, 0, 80); drawHamada(); return true; }
+  if (bindKey === "hm_kd") { setSliderSmart("hm-kd", val, 1.0, 25.0); drawHamada(); return true; }
+  if (bindKey === "hm_tc") { setSliderSmart("hm-tc", val, 0.0, 45.0); drawHamada(); return true; }
+  if (bindKey === "hm_pm") { setSliderSmart("hm-pm", val, 1.0, 18.0); drawHamada(); return true; }
+
+  // 5. VAN vs TIR y PGU DuPont
+  if (bindKey === "vt_r")  { setSliderSmart("vt-r", val, 0.5, 35.0); drawVanTir(); return true; }
+  if (bindKey === "vt_fa") { setSliderSmart("vt-fa", Math.max(20, val), 20, null); drawVanTir(); return true; }
+  if (bindKey === "vt_fb") { setSliderSmart("vt-fb", Math.max(10, val), 10, null); drawVanTir(); return true; }
+  if (bindKey === "pg_m")  { setSliderSmart("pg-m", val, 0.5, 80.0); drawVanTir(); return true; }
+  if (bindKey === "pg_r")  { setSliderSmart("pg-r", val, 0.1, 8.0); drawVanTir(); return true; }
+
+  // 8. Guías Oficiales Resueltas
+  if (bindKey === "g1_mu")  { setSliderSmart("g1-mu", val, -20.0, 60.0); drawGuiaEj1(); return true; }
+  if (bindKey === "g1_sd")  { setSliderSmart("g1-sd", val, 1.0, 60.0); drawGuiaEj1(); return true; }
+  if (bindKey === "g2_wa")  { const pct = val <= 1.0 && val >= 0 ? Math.round(val * 100) : Math.round(val); setSliderSmart("g2-wa", pct, 0, 100); drawGuiaEj2(); return true; }
+  if (bindKey === "g3_i0")  { setSliderSmart("g3-i0", Math.max(10, Math.round(val)), 10, null); drawGuiaEj2(); return true; }
+  if (bindKey === "g3_f1")  { setSliderSmart("g3-f1", Math.max(10, Math.round(val)), 10, null); drawGuiaEj2(); return true; }
+  if (bindKey === "gxx_i0") { setSliderSmart("gxx-i0", Math.max(100000, Math.round(val)), 100000, null); drawGuiaXX(); return true; }
+  if (bindKey === "gxx_rf") { setSliderSmart("gxx-rf", val, 0.5, 25.0); drawGuiaXX(); return true; }
+  if (bindKey === "gxx_pr") { setSliderSmart("gxx-pr", val, 0.0, 25.0); drawGuiaXX(); return true; }
+  return false;
+}
+function openChipEditor(ev, chipEl) {
+  ev.stopPropagation();
+  if (chipEl.dataset.editing === "1") return;
+  chipEl.dataset.editing = "1";
+  const bindKey = chipEl.dataset.bind;
+  const rawVal = chipEl.dataset.raw;
+  const stepVal = chipEl.dataset.step || "any";
+  const origHtml = chipEl.innerHTML;
+
+  const inp = document.createElement("input");
+  inp.type = "number";
+  inp.step = stepVal;
+  inp.value = rawVal;
+  inp.className = "chip-inline-in";
+  inp.style.width = Math.max(66, String(rawVal).length * 10 + 30) + "px";
+
+  let finished = false;
+  const commit = () => {
+    if (finished) return;
+    finished = true;
+    const ok = applyChipEdit(bindKey, inp.value);
+    if (!ok) {
+      chipEl.innerHTML = origHtml;
+      chipEl.dataset.editing = "0";
+    }
+  };
+  const cancel = () => {
+    if (finished) return;
+    finished = true;
+    chipEl.innerHTML = origHtml;
+    chipEl.dataset.editing = "0";
+  };
+
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); commit(); }
+    else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+  });
+  inp.addEventListener("blur", () => commit());
+  inp.addEventListener("click", e => e.stopPropagation());
+
+  chipEl.innerHTML = "";
+  chipEl.appendChild(inp);
+  inp.focus();
+  inp.select();
+}
+function renderFormulaStrip(id, cards) {
+  const box = document.getElementById(id);
+  if (!box) return;
+  box.innerHTML = cards.map((c, idx) => {
+    const k = `${id}_${idx}`;
+    const isOn = !!fstripXrayState[k];
+    const noteHtml = c.note ? `<div class="fstrip-note">${c.note}</div>` : "";
+    return `
+      <div class="fstrip-card${isOn ? ' xray-on' : ''}" style="border-left-color:${c.col || '#1E3A8A'};">
+        <div class="fstrip-head" onclick="toggleXrayCard('${k}', this)" title="Clic aquí para alternar Modo Rayos X">
+          <span class="fstrip-lbl" style="color:${c.col || '#1E3A8A'};">${c.lbl}</span>
+          <span class="xray-pill">${isOn ? "Rayos X: ON ⇄" : "f(x) → 123"}</span>
+        </div>
+        <div class="fstrip-eq">${c.eq}</div>
+        <div class="fstrip-sub">${c.sub || ""}</div>
+        ${noteHtml}
+      </div>`;
+  }).join("");
 }
 
 function renderPedBox(id, lectura, paradoja, defensa) {
@@ -931,6 +1329,26 @@ function drawFisher() {
   el("circle", { cx: sx(cur.c0c), cy: sy(cur.c1c), r: 7.5, fill: "#059669", stroke: "#FFFFFF", "stroke-width": "2" }, svg);
   drawPill(svg, sx(cur.c0c) + 12, sy(cur.c1c) - 12, `C* (Óptimo Consumo)`, "#065F46", "#ECFDF5", "start", "10.8");
 
+  renderFormulaStrip("fs-fstrip", [
+    {
+      lbl: "Óptimo Productivo (RMgI = rf)", col: "#1D4ED8",
+      eq: `I<sub>0</sub>* = (${mFrac('<span class="sym-p">A</span>', '2(1 + <span class="sym-r">r<sub>f</sub></span>)')})<sup>2</sup>`,
+      sub: `I<sub>0</sub>* = (${mFrac(eChip(fmtInt(a),a,"fs_a","1","vc-p","Productividad A"), "2·(1+" + eChip(fmtDec(rf,1)+"%",rf,"fs_rf","0.5","vc-r","Tasa de mercado rf (%)") + ")")})<sup>2</sup> = ${rChip("$"+fmtDec(cur.i0,1)+"M")}`,
+      note: `Tope físico Y<sub>0</sub> = ${eChip("$"+fmtInt(y0)+"M",y0,"fs_y0","5","vc-b","Dotación inicial Y0")} · Clic en cualquier cápsula punteada`
+    },
+    {
+      lbl: "VAN Productivo y Riqueza W0*", col: "#15803D",
+      eq: `VAN = −I<sub>0</sub>* + ${mFrac('C<sub>1</sub>*', '1 + <span class="sym-r">r<sub>f</sub></span>')}`,
+      sub: `VAN = −$${fmtDec(cur.i0,1)}M + ${mFrac("$"+fmtDec(cur.c1p,1)+"M", fmtDec(1+cur.rf,3))} = ${rChip("+$"+fmtDec(cur.van,1)+"M")}`,
+      note: `W<sub>0</sub>* = Y<sub>0</sub> + VAN = <b>$${fmtDec(cur.w0,1)}M</b>`
+    },
+    {
+      lbl: "Óptimo Consumo (TMS = −(1+rf))", col: "#0F766E",
+      eq: `C<sub>0</sub>* = <span class="sym-t">α</span> · W<sub>0</sub>* &nbsp;|&nbsp; C<sub>1</sub>* = (1−<span class="sym-t">α</span>) · W<sub>1</sub>*`,
+      sub: `C<sub>0</sub>* = ${eChip(fmtDec(al,2),al,"fs_al","0.05","vc-t","Impaciencia consumo α (0,2–0,85)")} · $${fmtDec(cur.w0,1)}M = ${rChip("$"+fmtDec(cur.c0c,1)+"M")}`,
+      note: `Posición t=0: <b>${posTxt}</b>`
+    }
+  ]);
   renderPedBox("ped-fisher",
     `La firma invierte <b>I<sub>0</sub>* = $${fmtDec(cur.i0,1)}M</b> creando un <b>VAN de +$${fmtDec(cur.van,1)}M</b> y expandiendo la riqueza presente a <b>W<sub>0</sub>* = $${fmtDec(cur.w0,1)}M</b>. Con impaciencia α = ${fmtDec(al,2)}, el accionista ${cur.prestamo > 0.5 ? `pide prestado $${fmtDec(cur.prestamo,1)}M en t=0` : (cur.prestamo < -0.5 ? `presta $${fmtDec(Math.abs(cur.prestamo),1)}M en t=0` : "consume exactamente el flujo productivo")}.`,
     `<b>¿Por qué un accionista gastador y uno ahorrador votan IGUAL en la junta?</b> Porque invertir en el punto <b>P*</b> empuja la Línea del Mercado de Capitales lo más afuera posible (máximo W<sub>0</sub>*). Una vez maximizada la torta, el ahorrador presta su excedente y el impaciente pide prestado contra sus utilidades futuras.`,
@@ -1037,6 +1455,27 @@ function drawRiesgo() {
   drawPill(svg, sx(ec) - 8, sy(eu) - 14, `EC = $${fmtDec(ec, 1)}M`, "#15803D", "#F0FDF4", "end", "10.5");
   drawPill(svg, sx(ew) + 10, sy(uEw) - 12, `U(E[W])`, "#1E3A8A", "#EFF6FF", "start", "10.5");
 
+  const pPct = Math.round(p * 100);
+  renderFormulaStrip("rk-fstrip", [
+    {
+      lbl: "Valor Esperado de la Lotería E(W)", col: "#0F172A",
+      eq: `E(W) = (1−<span class="sym-p">p</span>)·<span class="sym-o">W<sub>1</sub></span> + <span class="sym-p">p</span>·<span class="sym-b">W<sub>2</sub></span>`,
+      sub: `E(W) = ${fmtDec(1-p,2)}·${eChip("$"+fmtInt(w1)+"M",w1,"rk_w1","5","vc-o","Escenario malo W1")} + ${eChip(pPct+"%",pPct,"rk_p","5","vc-p","Prob. bueno p (%)")}·${eChip("$"+fmtInt(w2)+"M",w2,"rk_w2","5","vc-b","Escenario bueno W2")} = ${rChip("$"+fmtDec(ew,1)+"M")}`,
+      note: `Riqueza segura W<sub>0</sub> = ${eChip("$"+fmtInt(w0)+"M",w0,"rk_w0","2","vc-t","Riqueza segura W0")} (${esJJ ? "Juego Justo" : "No justo"})`
+    },
+    {
+      lbl: "Equivalente Cierto (EC)", col: "#15803D",
+      eq: `EC = (E[U(W)])<sup>1/<span class="sym-r">γ</span></sup>`,
+      sub: `EC = (${fmtDec(eu,2)})<sup>1/${eChip(fmtDec(g,2),g,"rk_g","0.05","vc-r","Curvatura utilidad γ (<1 Averso, 1 Neutral, >1 Amante)")}</sup> = ${rChip("$"+fmtDec(ec,1)+"M")}`,
+      note: `U(EC) = E[U(W)] = ${fmtDec(eu,2)} vs. U(E[W]) = ${fmtDec(uEw,2)}`
+    },
+    {
+      lbl: "Prima por Riesgo (π = E(W) − EC)", col: "#DC2626",
+      eq: `π = E(W) − EC`,
+      sub: `π = ${vChip("$"+fmtDec(ew,1)+"M","vc-b","Valor esperado")} − ${vChip("$"+fmtDec(ec,1)+"M","vc-g","Equivalente cierto")} = ${rChip((pi>=0?"+":"-")+"$"+fmtDec(Math.abs(pi),1)+"M", pi < 0)}`,
+      note: `Perfil: <b>${actLbl}</b> · Decisión: <b>${dec}</b>`
+    }
+  ]);
   renderPedBox("ped-riesgo",
     `Frente a un valor esperado de <b>$${fmtDec(ew,1)}M</b>, este individuo (${actLbl}) valora la lotería igual que <b>$${fmtDec(ec,1)}M seguros</b> (Equivalente Cierto). Su Prima por Riesgo es <b>${pi >= 0 ? "+" : "-"}$${fmtDec(Math.abs(pi),1)}M</b> y su decisión racional frente a W<sub>0</sub> = $${w0}M es: <b>${dec}</b>.`,
     `<b>Paradoja de los seguros y casinos:</b> la función cóncava (U'' &lt; 0) explica por qué una persona racional paga una prima de seguro mayor al daño esperado (quiere eliminar varianza). En cambio, solo alguien con utilidad convexa (amante del riesgo, π &lt; 0) aceptaría un juego justo o desfavorable por pura adrenalina.`,
@@ -1188,6 +1627,28 @@ function drawMarkowitz() {
     tn.textContent = ac.nm;
   });
 
+  const waPctM = Math.round(wa * 100), wbPctM = 100 - waPctM;
+  const curSharpe = (curP.er - rf) / Math.max(1e-6, curP.sd);
+  renderFormulaStrip("mk-fstrip", [
+    {
+      lbl: "Anualización Bursátil (252 Días)", col: "#1D4ED8",
+      eq: `σ<sub>anual</sub> = <span class="sym-b">σ<sub>d</sub></span> · √252`,
+      sub: `σ<sub>A</sub> = ${eChip(fmtDec(saD*100,2)+"%",Number((saD*100).toFixed(2)),"mk_sa","0.02","vc-b","Volat. diaria CHILE (%)")}·15,87 = ${rChip(fmtDec(sA*100,1)+"%")} &nbsp;|&nbsp; σ<sub>B</sub> = ${eChip(fmtDec(sbD*100,2)+"%",Number((sbD*100).toFixed(2)),"mk_sb","0.05","vc-o","Volat. diaria VAPORES (%)")}·15,87 = ${rChip(fmtDec(sB*100,1)+"%")}`,
+      note: `√252 ≈ 15,8745 días bursátiles al año`
+    },
+    {
+      lbl: "Riesgo del Portafolio (Diversificación)", col: "#7C3AED",
+      eq: `σ<sub>p</sub> = √(<span class="sym-b">w<sub>A</sub></span>²σ<sub>A</sub>² + w<sub>B</sub>²σ<sub>B</sub>² + 2w<sub>A</sub>w<sub>B</sub><span class="sym-p">ρ</span>σ<sub>A</sub>σ<sub>B</sub>)`,
+      sub: `w<sub>A</sub>=${eChip(waPctM+"%",waPctM,"mk_wa","2","vc-b","Peso en CHILE (%)")} · ρ=${eChip(fmtDec(rho,2),rho,"mk_rho","0.05","vc-p","Correlación ρ(A,B)")} ⇒ σ<sub>p</sub> = ${rChip(fmtDec(curP.sd*100,1)+"%")}`,
+      note: `Sin diversificar (ρ=1): ${fmtDec(linSd*100,1)}% → Ahorro <b>${fmtDec(ahorroRiesgo,1)} pp</b>`
+    },
+    {
+      lbl: "Ratio de Sharpe y Tasa Rf (BCP/BTP 5a)", col: "#DC2626",
+      eq: `S<sub>p</sub> = ${mFrac('E(R<sub>p</sub>) − <span class="sym-t">R<sub>f</sub></span>', 'σ<sub>p</sub>')}`,
+      sub: `S<sub>p</sub> = ${mFrac(fmtDec(curP.er*100,1)+"% − " + eChip(fmtDec(rf*100,2)+"%",Number((rf*100).toFixed(2)),"mk_rf","0.05","vc-t","Tasa libre de riesgo BCP/BTP 5a (%)"), fmtDec(curP.sd*100,1)+"%")} = ${rChip(fmtDec(curSharpe,2))}`,
+      note: `Máximo Sharpe (Tangente) = <b>${fmtDec(bestT.sh,2)}</b>`
+    }
+  ]);
   renderPedBox("ped-markowitz",
     `Con correlación <b>ρ = ${fmtDec(rho,2)}</b>, tu cartera (${Math.round(wa*100)}% A / ${Math.round(wb*100)}% B) logra volatilidad anual de <b>${fmtDec(curP.sd*100,1)}%</b>, ahorrando <b>${fmtDec(Math.abs(ahorroRiesgo),1)} pp</b> de riesgo frente a la combinación lineal sin diversificación. El Portafolio Tangente alcanza <b>Sharpe = ${fmtDec(bestT.sh,2)}</b>.`,
     `<b>La única "comida gratis" en finanzas (Markowitz):</b> si arrastras ρ hacia valores negativos, verás la curva azul curvarse tanto a la izquierda que la volatilidad de la cartera combinada cae <b>por debajo</b> del activo más seguro por sí solo. Combinar dos activos volátiles que se mueven en sentido inverso cancela sus sobresaltos.`,
@@ -1317,6 +1778,26 @@ function drawHamada() {
     tl.textContent = b.lbl;
   });
 
+  renderFormulaStrip("hm-fstrip", [
+    {
+      lbl: "Ecuación de Hamada (Beta Apalancado)", col: "#DC2626",
+      eq: `β<sub>L</sub> = <span class="sym-b">β<sub>U</sub></span>·[1 + (1 − <span class="sym-o">t</span>)·${mFrac('B', 'S')}]`,
+      sub: `β<sub>L</sub> = ${eChip(fmtDec(bu,2),bu,"hm_bu","0.05","vc-b","Beta operativo puro βU")}·[1 + (1 − ${eChip(fmtDec(tc*100,1)+"%",Number((tc*100).toFixed(1)),"hm_tc","0.5","vc-o","Impuesto corporativo t (%)")})·${fmtDec(c.bs,2)}] = ${rChip(fmtDec(c.bl,2))}`,
+      note: `Deuda/Valor B/V = ${eChip(dvPct+"%",dvPct,"hm_dv","1","vc-p","% Deuda sobre Valor B/V")} ⇒ B/S = ${fmtDec(c.bs,2)}`
+    },
+    {
+      lbl: "Costo Patrimonial CAPM (Ke)", col: "#1D4ED8",
+      eq: `K<sub>e</sub> = R<sub>f</sub> + β<sub>L</sub>·<span class="sym-t">(R<sub>m</sub>−R<sub>f</sub>)</span>`,
+      sub: `K<sub>e</sub> = 5,5% + ${vChip(fmtDec(c.bl,2),"vc-r","βL")}·${eChip(fmtDec(pm*100,1)+"%",Number((pm*100).toFixed(1)),"hm_pm","0.5","vc-t","Prima de mercado (Rm−Rf) %")} = ${rChip(fmtDec(c.ke*100,2)+"%")}`,
+      note: `Sin deuda (βU): K<sub>u</sub> = ${fmtDec(c.ku*100,2)}%`
+    },
+    {
+      lbl: "WACC y Valor Apalancado (APV)", col: "#15803D",
+      eq: `WACC = w<sub>E</sub>K<sub>e</sub> + w<sub>D</sub><span class="sym-p">K<sub>d</sub></span>(1 − t)`,
+      sub: `WACC = ${100-dvPct}%·${fmtDec(c.ke*100,1)}% + ${dvPct}%·${eChip(fmtDec(kd*100,2)+"%",Number((kd*100).toFixed(2)),"hm_kd","0.25","vc-p","Tasa deuda Kd (%)")}·(1−${fmtDec(tc,3)}) = ${rChip(fmtDec(c.wacc*100,2)+"%")}`,
+      note: `APV = $100M + t·B ($${fmtDec(c.escMM,1)}M) = <b>$${fmtDec(c.apv,1)}M</b>`
+    }
+  ]);
   renderPedBox("ped-hamada",
     `Con <b>${dvPct}% de deuda</b> (B/S = ${fmtDec(c.bs,2)}), el apalancamiento eleva el beta del accionista de <b>β<sub>U</sub> = ${fmtDec(bu,2)}</b> a <b>β<sub>L</sub> = ${fmtDec(c.bl,2)}</b> y exige un <b>K<sub>e</sub> = ${fmtDec(c.ke*100,2)}%</b>, pero el escudo fiscal t·B = <b>+$${fmtDec(c.escMM,1)}M</b> reduce el <b>WACC a ${fmtDec(c.wacc*100,2)}%</b>.`,
     `<b>Paradoja de la Deuda (Modigliani-Miller con impuestos):</b> aunque endeudarse vuelve más riesgosa la acción (la curva roja K<sub>e</sub> sube sin parar), el costo promedio total (curva azul WACC) <b>baja</b> porque el Fisco subsidia una fracción t = ${fmtDec(tc*100,1)}% de los intereses. En el mundo real el límite aparece cuando la deuda excesiva dispara costos de quiebra.`,
@@ -1408,6 +1889,26 @@ function drawVanTir() {
   document.getElementById("pg-box").innerHTML =
     `<b>PGU (DuPont Operacional):</b> Margen (${fmtDec(mOp,1)}%) × Rotación (${fmtDec(rot,2)}x) = <b>${fmtDec(pgu, 2)}%</b> de rentabilidad sobre activos operacionales.`;
 
+  renderFormulaStrip("vt-fstrip", [
+    {
+      lbl: "VAN Proyecto A (Escala / Largo Plazo)", col: "#1D4ED8",
+      eq: `VAN<sub>A</sub> = −100 + ${mFrac("15","(1+r)")} + ${mFrac("25","(1+r)²")} + ${mFrac('<span class="sym-b">F<sub>A3</sub></span>','(1+<span class="sym-p">r</span>)³')}`,
+      sub: `r = ${eChip(fmtDec(rPct,1)+"%",rPct,"vt_r","0.5","vc-p","Tasa de descuento r (%)")} · F<sub>A3</sub> = ${eChip("$"+fA3+"M",fA3,"vt_fa","5","vc-b","Flujo Año 3 Proyecto A")} ⇒ VAN<sub>A</sub> = ${rChip("$"+fmtDec(vA,1)+"M", vA < 0)}`,
+      note: `TIR A = <b>${fmtDec(tA,1)}%</b> | Tasa de Fisher r* = <b>${fmtDec(rFisher,1)}%</b>`
+    },
+    {
+      lbl: "VAN Proyecto B (Recuperación Rápida)", col: "#EA580C",
+      eq: `VAN<sub>B</sub> = −100 + ${mFrac('<span class="sym-o">F<sub>B1</sub></span>','(1+<span class="sym-p">r</span>)')} + ${mFrac("45","(1+r)²")} + ${mFrac("18","(1+r)³")}`,
+      sub: `F<sub>B1</sub> = ${eChip("$"+fB1+"M",fB1,"vt_fb","5","vc-o","Flujo Año 1 Proyecto B")} · r = ${fmtDec(rPct,1)}% ⇒ VAN<sub>B</sub> = ${rChip("$"+fmtDec(vB,1)+"M", vB < 0)}`,
+      note: `TIR B = <b>${fmtDec(tB,1)}%</b> | ${rPct < rFisher ? "Conflicto activo: r < r*" : "Sin conflicto: r ≥ r*"}`
+    },
+    {
+      lbl: "Poder Generador de Utilidades (PGU / DuPont)", col: "#059669",
+      eq: `PGU = <span class="sym-b">Margen</span> × <span class="sym-t">Rotación</span>`,
+      sub: `PGU = ${eChip(fmtDec(mOp,1)+"%",mOp,"pg_m","0.5","vc-b","Margen Operacional EBIT/Ventas (%)")} × ${eChip(fmtDec(rot,2)+"x",rot,"pg_r","0.1","vc-t","Rotación Activos (veces)")} = ${rChip(fmtDec(pgu,2)+"%")}`,
+      note: `Rentabilidad operativa sobre activos (EBIT / Activos Op.)`
+    }
+  ]);
   renderPedBox("ped-vantir",
     `Al <b>${fmtDec(rPct,1)}%</b>, el Proyecto A entrega <b>VAN $${fmtDec(vA,1)}M</b> (TIR ${fmtDec(tA,1)}%) y B entrega <b>VAN $${fmtDec(vB,1)}M</b> (TIR ${fmtDec(tB,1)}%). Como la tasa actual está ${rPct < rFisher ? "<b>por debajo</b> de la Tasa de Fisher (r* = " + fmtDec(rFisher,1) + "%), gana A aunque B tenga mayor TIR" : "<b>por encima</b> de la Tasa de Fisher (r* = " + fmtDec(rFisher,1) + "%), ambos criterios coinciden en B"}.`,
     `<b>¿Por qué la TIR "miente" frente al VAN?</b> La TIR asume implícitamente que podrás reinvertir todos los flujos intermedios a esa misma TIR altísima (ej. 27%), lo cual suele ser irreal. El VAN asume reinversión a la tasa de mercado/costo de capital (r). En DuPont/PGU ocurre algo parecido: un supermercado con margen de 6% puede igualar la rentabilidad de una boutique de 24% rotando sus activos 4 veces más rápido.`,
@@ -1441,41 +1942,110 @@ const FORMULAS_FIN = [
   { id: 7, cat: "mk", tag: "Tobin", title: "7. Ratio de Sharpe y Línea CML",
     eq: `S<sub>p</sub> = <span class="frac"><span class="num">E(R<sub>p</sub>) − R<sub>f</sub></span><span class="den">σ<sub>p</sub></span></span> &nbsp;|&nbsp; E(R<sub>p</sub>) = R<sub>f</sub> + S<sub>T</sub>·σ<sub>p</sub>`,
     rule: "El Portafolio Tangente maximiza Sharpe usando Rf de bonos BCP/BTP 5 años del Banco Central." },
-  { id: 8, cat: "mk", tag: "CAPM", title: "8. CAPM, Beta y Línea SML",
+  { id: 8, cat: "mk", tag: "CAPM", title: "8. Modelo CAPM, Beta y Línea SML",
     eq: `R<sub>e</sub> = R<sub>f</sub> + β<sub>i</sub>(R<sub>m</sub> − R<sub>f</sub>) &nbsp;|&nbsp; β<sub>i</sub> = <span class="frac"><span class="num">Cov(R<sub>i</sub>, R<sub>m</sub>)</span><span class="den">Var(R<sub>m</sub>)</span></span>`,
     rule: "Solo se remunera el riesgo sistemático (β). El riesgo no sistemático se elimina diversificando (5 → 30 títulos IPSA)." },
-  { id: 17, cat: "mk", tag: "Normal", title: "17. Distribución Normal (Regla Empírica 68-95-99,7%)",
+  { id: 9, cat: "mk", tag: "CAPM", title: "9. Beta de Cartera y Alfa de Jensen (α)",
+    eq: `β<sub>p</sub> = ∑ w<sub>i</sub>·β<sub>i</sub> &nbsp;|&nbsp; α<sub>i</sub> = R<sub>i</sub> − [R<sub>f</sub> + β<sub>i</sub>(R<sub>m</sub> − R<sub>f</sub>)]`,
+    rule: "Sobre la SML: α > 0 (acción subvalorada → comprar). Bajo la SML: α < 0 (sobrevalorada → vender)." },
+  { id: 10, cat: "mk", tag: "Normal", title: "10. Distribución Normal (Regla Empírica 68-95-99,7%)",
     eq: `68,26%: μ ± 1σ &nbsp;|&nbsp; 95,44%: μ ± 2σ &nbsp;|&nbsp; 99,74%: μ ± 3σ`,
     rule: "Guía 2 CPA Ej. 1 (μ=14,3%, σ=24,5%): ±1σ [-10,2%; 38,8%], ±2σ [-34,7%; 63,3%], ±3σ [-59,2%; 87,8%]." },
-  { id: 18, cat: "mk", tag: "Estadística", title: "18. Covarianza y Correlación (Ex-Ante vs. Histórica)",
+  { id: 11, cat: "mk", tag: "Estadística", title: "11. Covarianza y Correlación (Ex-Ante vs. Histórica)",
     eq: `Cov = ∑ p<sub>s</sub>(R<sub>A,s</sub>−R̄<sub>A</sub>)(R<sub>B,s</sub>−R̄<sub>B</sub>) &nbsp;|&nbsp; ρ = <span class="frac"><span class="num">Cov(A,B)</span><span class="den">σ<sub>A</sub>·σ<sub>B</sub></span></span>`,
     rule: "Con probabilidades (Ej. 2 y 4) se pondera por p_s; en series históricas (Ej. 5 MSFT y Ej. 6 HD) se divide por n−1 (muestral) o n (poblacional). ρ siempre ∈ [−1, +1]." },
 
-  { id: 9, cat: "cap", tag: "Hamada", title: "9. Ecuación de Hamada (βU ↔ βL)",
+  { id: 12, cat: "cap", tag: "Hamada", title: "12. Ecuación de Hamada (βU ↔ βL)",
     eq: `β<sub>L</sub> = β<sub>U</sub> [1 + (1 − t)<span class="frac"><span class="num">B</span><span class="den">S</span></span>] &nbsp;|&nbsp; β<sub>U</sub> = <span class="frac"><span class="num">β<sub>L</sub></span><span class="den">1 + (1 − t)(B/S)</span></span>`,
     rule: "Desapalanca el beta de empresas comparables para obtener riesgo operativo puro (βU) y reapalanca con el B/S propio." },
-  { id: 10, cat: "cap", tag: "WACC", title: "10. Costo Promedio Ponderado de Capital (WACC)",
+  { id: 13, cat: "cap", tag: "WACC", title: "13. Costo Promedio Ponderado de Capital (WACC)",
     eq: `WACC = K<sub>e</sub><span class="frac"><span class="num">S</span><span class="den">V</span></span> + K<sub>d</sub>(1 − t)<span class="frac"><span class="num">B</span><span class="den">V</span></span>`,
     rule: "Tasa de descuento del Flujo de Caja Libre (FCL); incorpora el escudo fiscal de los intereses vía (1 − t)." },
-  { id: 11, cat: "cap", tag: "Deuda", title: "11. Cuota Francesa (PAGO) y Escudo Fiscal",
+  { id: 14, cat: "cap", tag: "Deuda", title: "14. Cuota Francesa (PAGO) y Escudo Fiscal",
     eq: `Cuota = P·<span class="frac"><span class="num">K<sub>d</sub>(1+K<sub>d</sub>)<sup>n</sup></span><span class="den">(1+K<sub>d</sub>)<sup>n</sup> − 1</span></span> &nbsp;|&nbsp; EF<sub>t</sub> = I<sub>t</sub>·t`,
     rule: "Intereses (It) se restan ANTES de impuestos (generan escudo fiscal); Amortización de capital va DESPUÉS de impuestos." },
-  { id: 12, cat: "cap", tag: "MM / APV", title: "12. Valor Presente Ajustado (APV)",
+  { id: 15, cat: "cap", tag: "Deuda", title: "15. Fila a Fila Tabla de Amortización",
+    eq: `I<sub>t</sub> = Saldo<sub>t−1</sub>·K<sub>d</sub> &nbsp;|&nbsp; Amort<sub>t</sub> = Cuota − I<sub>t</sub> &nbsp;|&nbsp; Saldo<sub>t</sub> = Saldo<sub>t−1</sub> − Amort<sub>t</sub>`,
+    rule: "En el Año 0: Saldo_0 = Préstamo. La cuota es fija, el interés decrece cada año y la amortización crece hasta Saldo_n = 0." },
+  { id: 16, cat: "cap", tag: "MM / APV", title: "16. Valor Presente Ajustado (APV)",
     eq: `APV = VAN(FCL a K<sub>u</sub>) + ∑ <span class="frac"><span class="num">I<sub>t</sub> · t</span><span class="den">(1 + K<sub>d</sub>)<sup>t</sup></span></span>`,
     rule: "Separa el valor operativo puro del negocio (100% patrimonio a Ku) del valor creado por el financiamiento (escudo a Kd)." },
 
-  { id: 13, cat: "flj", tag: "CAPEX", title: "13. Separación IVA (19%) y Depreciación Lineal",
+  { id: 17, cat: "flj", tag: "CAPEX", title: "17. Separación IVA (19%) y Depreciación Lineal",
     eq: `Neto = <span class="frac"><span class="num">Bruto</span><span class="den">1,19</span></span> &nbsp;|&nbsp; Dep = <span class="frac"><span class="num">Neto − Rescate</span><span class="den">Vida Útil</span></span>`,
     rule: "Terrenos y Capital de Trabajo NO se deprecian. La depreciación se resta antes de impuestos y se reversa (+) debajo del BDI." },
-  { id: 14, cat: "flj", tag: "Flujos", title: "14. Relación Flujo Libre (FCL) vs. Inversionista (FCI)",
+  { id: 18, cat: "flj", tag: "Flujos", title: "18. Relación Flujo Libre (FCL) vs. Inversionista (FCI)",
     eq: `FCI<sub>t</sub> = FCL<sub>t</sub> − I<sub>t</sub>(1 − t) − Amort<sub>t</sub>`,
-    rule: "FCL se descuenta a WACC (o Ke si no hay deuda); FCI descuenta en Año 0 el préstamo recibido y se descuenta a Ke." },
-  { id: 15, cat: "flj", tag: "Criterios", title: "15. VAN, TIR y Regla de Conflictos",
+    rule: "FCL se descuenta a WACC (sin intereses); FCI suma (+Préstamo) en Año 0, resta intereses y amortización, y se descuenta a Ke." },
+  { id: 19, cat: "flj", tag: "Ej. 8", title: "19. Venta de Activo Usado y Valor Libro (VL)",
+    eq: `VL = Compra − Dep.Acum &nbsp;|&nbsp; Caja<sub>vta</sub> = P<sub>vta</sub> − t·(P<sub>vta</sub> − VL)`,
+    rule: "En el flujo: (+) Precio Venta y (−) VL antes de impuestos (tributa solo la ganancia), y luego (+) Reverso VL después de impuestos." },
+  { id: 20, cat: "flj", tag: "Criterios", title: "20. VAN, Valor Presente y Regla de Conflictos",
     eq: `VAN = −I<sub>0</sub> + ∑ <span class="frac"><span class="num">FCN<sub>t</sub></span><span class="den">(1 + r)<sup>t</sup></span></span> &nbsp;|&nbsp; VP = <span class="frac"><span class="num">FCN<sub>t</sub></span><span class="den">(1+r)<sup>t</sup></span></span>`,
     rule: "Nunca multiplicar por (1+r)^t (Error Ej. 7). En proyectos mutuamente excluyentes manda siempre el MAYOR VAN." },
-  { id: 16, cat: "flj", tag: "Riesgo", title: "16. VAN Esperado, Desviación, CV y VaR 95%",
+  { id: 21, cat: "flj", tag: "Criterios", title: "21. Payback Exacto (Años y Meses)",
+    eq: `PB = (t − 1) + <span class="frac"><span class="num">|Acum<sub>t−1</sub>|</span><span class="den">FCN<sub>t</sub></span></span>`,
+    rule: "t es el primer año en que el Flujo Acumulado pasa a ser ≥ 0. No reemplaza al VAN porque ignora flujos posteriores al corte." },
+  { id: 22, cat: "flj", tag: "Riesgo", title: "22. VAN Esperado, Desviación, CV y VaR 95%",
     eq: `E(VAN) = ∑ p<sub>i</sub>·VAN<sub>i</sub> &nbsp;|&nbsp; CV = <span class="frac"><span class="num">σ(VAN)</span><span class="den">|E(VAN)|</span></span>`,
     rule: "En Monte Carlo el VaR 95% corresponde al Percentil 5% de la distribución simulada del VAN." }
+];
+
+const FLUJOS_PLANTILLAS_FIN = [
+  {
+    title: "1. Flujo de Caja Libre (FCL — Puro)",
+    badge: "Descuenta a WACC",
+    col: "#1D4ED8",
+    rows: [
+      { s: "(+)", c: "sg-p", t: "Ingresos Operacionales Netos (sin IVA)" },
+      { s: "(−)", c: "sg-m", t: "Costos Variables y Costos Fijos Netos" },
+      { s: "(−)", c: "sg-m", t: "Depreciación y Amort. Intangibles" },
+      { s: "(=)", c: "sg-e", t: "BAI / UAI (Base Imponible)", cls: "sub" },
+      { s: "(−)", c: "sg-m", t: "Impuesto Corporativo (t · BAI)" },
+      { s: "(=)", c: "sg-e", t: "BDI / UDI (Utilidad Neta)", cls: "sub" },
+      { s: "(+)", c: "sg-p", t: "Reverso Depreciación y Amortización" },
+      { s: "(−)", c: "sg-m", t: "Inversión Inicial CAPEX + Cap. Trabajo (Año 0)" },
+      { s: "(+)", c: "sg-p", t: "Valor de Rescate + Recup. 100% CT (Año N)" },
+      { s: "(=)", c: "sg-e", t: "FLUJO DE CAJA LIBRE (FCL)", cls: "tot" }
+    ],
+    foot: "<b>Regla clave:</b> NO incluye préstamo, intereses ni amortización de deuda (el escudo fiscal ya está dentro del WACC). VP = FCL_t / (1 + WACC)^t."
+  },
+  {
+    title: "2. Flujo del Inversionista (FCI — Deuda)",
+    badge: "Descuenta a Ke",
+    col: "#059669",
+    rows: [
+      { s: "(+)", c: "sg-p", t: "Ingresos Operacionales Netos (sin IVA)" },
+      { s: "(−)", c: "sg-m", t: "Costos Variables, Fijos, Dep. y Amort." },
+      { s: "(−)", c: "sg-m", t: "Intereses de la Deuda (Tabla PAGO)", cls: "hlt" },
+      { s: "(=)", c: "sg-e", t: "BAI / UAI (Menor por Escudo Fiscal)", cls: "sub" },
+      { s: "(−)", c: "sg-m", t: "Impuesto Corporativo (t · BAI)" },
+      { s: "(=)", c: "sg-e", t: "BDI / UDI (Utilidad Neta)", cls: "sub" },
+      { s: "(+)", c: "sg-p", t: "Reverso Depreciación y Amortización" },
+      { s: "(−)", c: "sg-m", t: "Inversión Inicial CAPEX + CT (Año 0)" },
+      { s: "(+)", c: "sg-p", t: "Préstamo Bancario Recibido (Año 0)", cls: "hlt" },
+      { s: "(−)", c: "sg-m", t: "Amortización Capital Deuda (Años 1..n)", cls: "hlt" },
+      { s: "(+)", c: "sg-p", t: "Valor de Rescate + Recup. 100% CT (Año N)" },
+      { s: "(=)", c: "sg-e", t: "FLUJO DEL INVERSIONISTA (FCI)", cls: "tot" }
+    ],
+    foot: "<b>Diferencia clave (en amarillo):</b> Interés va ANTES de impuestos; Préstamo (+) en Año 0 y Amortización (−) después de impuestos. VP = FCI_t / (1 + Ke)^t."
+  },
+  {
+    title: "3. Casos Especiales de Examen (Ej. 7 y 8)",
+    badge: "Trampas Clásicas",
+    col: "#7C3AED",
+    rows: [
+      { s: "(+)", c: "sg-p", t: "Venta de Máquina Usada (antes de imp.)", cls: "hlt" },
+      { s: "(−)", c: "sg-m", t: "Valor Libro Máquina (antes de imp.)", cls: "hlt" },
+      { s: "(=)", c: "sg-e", t: "Tributa solo sobre (P_vta − Valor Libro)", cls: "sub" },
+      { s: "(+)", c: "sg-p", t: "Reverso Valor Libro (después de imp.)", cls: "hlt" },
+      { s: "(−)", c: "sg-m", t: "Compra Máquina Nueva (Año de reemplazo)" },
+      { s: "$0",  c: "sg-m", t: "Estudio Viabilidad Previo = Costo Hundido" },
+      { s: "$0",  c: "sg-m", t: "Terreno y Cap. Trabajo: NO se deprecian" },
+      { s: "÷",   c: "sg-e", t: "Actualizar = DIVIDIR por (1 + r)^t (NO ×)", cls: "tot" }
+    ],
+    foot: "<b>Checklist anti-errores:</b> (1) Todo en valores netos (/1,19); (2) Signos consistentes (−) egresos; (3) Siempre reversar Depreciación, Amortización y Valor Libro."
+  }
 ];
 
 const ESQUELETOS_FIN = [
@@ -1583,6 +2153,28 @@ function renderMecanica() {
     fGrid.appendChild(card);
   });
   if (!mecBuilt) {
+    const fljGrid = document.getElementById("mec-flujos-grid");
+    if (fljGrid) {
+      fljGrid.innerHTML = "";
+      FLUJOS_PLANTILLAS_FIN.forEach(flj => {
+        const fc = document.createElement("div");
+        fc.className = "flj-card";
+        fc.style.borderTopColor = flj.col;
+        fc.onclick = function() { this.classList.toggle("revealed"); };
+        const rowsHtml = flj.rows.map(r =>
+          `<div class="flj-row${r.cls ? ' ' + r.cls : ''}"><span class="flj-sgn ${r.c}">${r.s}</span><span>${r.t}</span></div>`
+        ).join("");
+        fc.innerHTML = `
+          <div class="flj-head">
+            <span class="flj-title">${flj.title}</span>
+            <span class="flj-badge" style="background:${flj.col};">${flj.badge}</span>
+          </div>
+          <div class="blind-cover">Haz clic para revelar el orden vertical y signos del flujo</div>
+          <div class="flj-rows">${rowsHtml}</div>
+          <div class="flj-foot">${flj.foot}</div>`;
+        fljGrid.appendChild(fc);
+      });
+    }
     sGrid.innerHTML = "";
     ESQUELETOS_FIN.forEach(sk => {
       const sc = document.createElement("div");
@@ -1601,7 +2193,7 @@ function setModoMec(isBlind) {
   cont.classList.toggle("blind-mode", isBlind);
   document.getElementById("btn-modo-copia").classList.toggle("primary", !isBlind);
   document.getElementById("btn-modo-ciego").classList.toggle("primary", isBlind);
-  cont.querySelectorAll(".f-card, .s-card").forEach(n => n.classList.remove("revealed"));
+  cont.querySelectorAll(".f-card, .flj-card, .s-card").forEach(n => n.classList.remove("revealed"));
 }
 function filtrarMec(cat, btn) {
   mecFilter = cat;
@@ -2000,6 +2592,20 @@ function drawGuiaEj1() {
   document.getElementById("g1-k2").textContent = `[${fmtDec(r2a, 1)}% ; ${fmtDec(r2b, 1)}%]`;
   document.getElementById("g1-k3").textContent = `[${fmtDec(r3a, 1)}% ; ${fmtDec(r3b, 1)}%]`;
 
+  renderFormulaStrip("g1-fstrip", [
+    {
+      lbl: "Intervalo 68,26% (±1σ)", col: "#1D4ED8",
+      eq: `[ <span class="sym-b">μ</span> − 1·<span class="sym-p">σ</span> ; <span class="sym-b">μ</span> + 1·<span class="sym-p">σ</span> ]`,
+      sub: `[ ${eChip(fmtDec(mu,1)+"%",mu,"g1_mu","0.1","vc-b","Media anual μ (%)")} − ${eChip(fmtDec(sd,1)+"%",sd,"g1_sd","0.1","vc-p","Desviación estándar σ (%)")} ; ${fmtDec(mu,1)}% + ${fmtDec(sd,1)}% ] = ${rChip("["+fmtDec(r1a,1)+"% ; "+fmtDec(r1b,1)+"%]")}`,
+      note: `Regla empírica: ~2 de cada 3 años caen dentro de ±1σ`
+    },
+    {
+      lbl: "Intervalo 95,44% (±2σ)", col: "#059669",
+      eq: `[ <span class="sym-b">μ</span> − 2·<span class="sym-p">σ</span> ; <span class="sym-b">μ</span> + 2·<span class="sym-p">σ</span> ]`,
+      sub: `[ ${fmtDec(mu,1)}% − 2·(${fmtDec(sd,1)}%) ; ${fmtDec(mu,1)}% + 2·(${fmtDec(sd,1)}%) ] = ${rChip("["+fmtDec(r2a,1)+"% ; "+fmtDec(r2b,1)+"%]")}`,
+      note: `99,74% (±3σ) = [${fmtDec(r3a,1)}% ; ${fmtDec(r3b,1)}%]`
+    }
+  ]);
   const svg = document.getElementById("svg-g1-gauss");
   if (!svg) return;
   svg.innerHTML = "";
@@ -2074,6 +2680,20 @@ function drawGuiaEj2() {
   tbl += `<tr><td><b>Esperado / σ</b></td><td>100%</td><td>17,5% (25,9%)</td><td>5,5% (11,5%)</td><td><b>${fmtDec(erp*100,2)}% (${fmtDec(sp*100,2)}%)</b></td></tr></tbody></table>`;
   document.getElementById("g2-tbl-box").innerHTML = tbl;
 
+  renderFormulaStrip("g2-fstrip", [
+    {
+      lbl: "Ej. 2 — Retorno y Riesgo Cartera (wA / wB)", col: "#1D4ED8",
+      eq: `E(R<sub>p</sub>) = <span class="sym-b">w<sub>A</sub></span>·17,5% + w<sub>B</sub>·5,5%`,
+      sub: `E(R<sub>p</sub>) = ${eChip(waPct+"%",waPct,"g2_wa","1","vc-b","Peso en Activo A (%)")}·17,5% + ${100-waPct}%·5,5% = ${rChip(fmtDec(erp*100,2)+"%")} &nbsp;⇒&nbsp; σ<sub>p</sub> = ${rChip(fmtDec(sp*100,2)+"%")}`,
+      note: `Var(p) = ${vp.toFixed(6)} | Cov(A,B) = −0,004875 (ρ = −0,1639)`
+    },
+    {
+      lbl: "Ej. 3 — Rendimiento Simple (1 Período)", col: "#059669",
+      eq: `R = ${mFrac('<span class="sym-t">F<sub>1</sub></span> − <span class="sym-o">I<sub>0</sub></span>', '<span class="sym-o">I<sub>0</sub></span>')} × 100%`,
+      sub: `R = ${mFrac(eChip("$"+fmtInt(f1),f1,"g3_f1","50","vc-t","Ingreso efectivo Año 1 ($)") + " − " + eChip("$"+fmtInt(i0),i0,"g3_i0","50","vc-o","Inversión inicial I0 ($)"), "$" + fmtInt(i0))} = ${rChip(fmtDec(r3,2)+"%", r3 < 0)}`,
+      note: `Ganancia neta = $${fmtInt(f1 - i0)} sobre inversión inicial`
+    }
+  ]);
   document.getElementById("g2-sol").innerHTML =
     `<b>Ej. 2 (${waPct}% A / ${100-waPct}% B):</b> E(R<sub>p</sub>) = ${fmtDec(wa,2)}(17,5%)+${fmtDec(wb,2)}(5,5%) = <b>${fmtDec(erp*100,2)}%</b> | ` +
     `Var(p) = ${fmtDec(wa,2)}²(0,066875)+${fmtDec(wb,2)}²(0,013225)+2(${fmtDec(wa,2)})(${fmtDec(wb,2)})(−0,004875) = <b>${vp.toFixed(6)}</b> ⇒ σ<sub>p</sub> = <b>${fmtDec(sp*100,2)}%</b><br/>` +
@@ -2228,6 +2848,20 @@ function drawGuiaXX() {
   document.getElementById("gxx-k-tir").textContent = fmtDec(tir, 2) + "%";
   document.getElementById("gxx-k-dec").textContent = van >= 0 ? "ACEPTAR (VAN > 0 y TIR > k)" : "RECHAZAR (VAN < 0)";
 
+  renderFormulaStrip("gxx-fstrip", [
+    {
+      lbl: "Tasa Ajustada por Riesgo (k = Rf + Prima)", col: "#7C3AED",
+      eq: `k = <span class="sym-b">R<sub>f</sub></span> + <span class="sym-p">Prima</span>`,
+      sub: `k = ${eChip(fmtDec(rf,1)+"%",rf,"gxx_rf","0.5","vc-b","Tasa libre de riesgo Rf (%)")} + ${eChip(fmtDec(pr,1)+"%",pr,"gxx_pr","0.5","vc-p","Prima de riesgo (%)")} = ${rChip(fmtDec(rf+pr,1)+"%")}`,
+      note: `Factor anual (1 + k) = ${fmtDec(1+k,3)}`
+    },
+    {
+      lbl: "VAN con Flujos Esperados E(Ft)", col: "#15803D",
+      eq: `VAN = −<span class="sym-r">I<sub>0</sub></span> + ${mFrac("$400k","(1+k)")} + ${mFrac("$700k","(1+k)²")} + ${mFrac("$300k","(1+k)³")}`,
+      sub: `VAN = −${eChip("$"+fmtInt(i0),i0,"gxx_i0","25000","vc-r","Inversión inicial I0 ($)")} + $${fmtInt(vps[1])} + $${fmtInt(vps[2])} + $${fmtInt(vps[3])} = ${rChip((van>=0?"+":"-")+"$"+fmtInt(Math.abs(van)), van < 0)}`,
+      note: `TIR = <b>${fmtDec(tir,2)}%</b> vs. k = ${fmtDec(rf+pr,1)}%`
+    }
+  ]);
   document.getElementById("gxx-sol").innerHTML =
     `<b>VAN(${fmtDec(rf+pr,1)}%):</b> −$${fmtInt(i0)} + $400.000/${fmtDec(1+k,3)} + $700.000/${fmtDec(Math.pow(1+k,2),4)} + $300.000/${fmtDec(Math.pow(1+k,3),4)} ` +
     `= −$${fmtInt(i0)} + $${fmtInt(vps[1])} + $${fmtInt(vps[2])} + $${fmtInt(vps[3])} = <b>${van >= 0 ? "+" : "-"}$${fmtInt(Math.abs(van))}</b> | <b>TIR = ${fmtDec(tir,2)}%</b>`;
